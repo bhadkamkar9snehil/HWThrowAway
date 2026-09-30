@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rangoli Printer — 3D Prototype Viewer</title>
+<style>
+:root{--bg:#f4f6f2;--panel:rgba(255,255,255,.94);--line:#d8ddd5;--text:#172017;--muted:#69736a;--accent:#496d50}
+*{box-sizing:border-box}html,body,#app{margin:0;width:100%;height:100%;overflow:hidden;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text)}
+#view{position:absolute;inset:0}canvas{display:block}
+.bar,.side,.hint{position:absolute;z-index:3;background:var(--panel);border:1px solid var(--line);box-shadow:0 16px 45px rgba(30,45,30,.10);backdrop-filter:blur(10px)}
+.bar{left:18px;right:18px;top:18px;height:58px;border-radius:16px;display:flex;align-items:center;gap:8px;padding:8px 10px 8px 15px}
+.brand{margin-right:auto}.brand b{display:block;font-size:14px}.brand span{font-size:11px;color:var(--muted)}
+button{height:38px;border:1px solid var(--line);border-radius:10px;background:white;padding:0 11px;font-weight:650;font-size:12px;cursor:pointer}button:hover,button.on{background:#e8f0e8}
+.side{left:18px;top:88px;bottom:18px;width:284px;border-radius:16px;padding:16px;overflow:auto}
+h3{margin:0 0 12px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.part{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:center;border-radius:10px;padding:9px;margin-bottom:6px;cursor:pointer}.part:hover,.part.sel{background:#edf3ed}
+input[type=checkbox]{accent-color:var(--accent)}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:12px;margin:8px 0}.kv span:first-child{color:var(--muted)}
+.sep{height:1px;background:var(--line);margin:16px -16px}
+.range{width:100%;accent-color:var(--accent)}
+.links{display:flex;gap:8px;margin-top:12px}.links a{font-size:11px;text-decoration:none;color:#315b39;border:1px solid #cad7cb;border-radius:8px;padding:7px 9px}
+.hint{right:18px;bottom:18px;border-radius:12px;padding:9px 11px;font-size:11px;color:var(--muted)}
+#msg{position:absolute;z-index:5;top:92px;left:50%;transform:translateX(-50%);background:#18231a;color:white;padding:8px 12px;border-radius:999px;font-size:11px;display:none}
+@media(max-width:760px){.side{width:235px;left:10px;top:78px;bottom:10px}.bar{left:10px;right:10px;top:10px}.bar button{padding:0 8px}.brand span,.hint{display:none}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}</script>
+</head>
+<body><div id="app"><div id="view"></div>
+<div class="bar"><div class="brand"><b>Rangoli Printer</b><span>interactive prototype viewer</span></div>
+<button data-v="iso">Iso</button><button data-v="front">Front</button><button data-v="right">Right</button><button data-v="top">Top</button>
+<button id="fit">Fit</button><button id="wire">Wireframe</button><button id="spin">Auto rotate</button></div>
+<div class="side"><h3>Parts</h3><div id="parts"></div><div class="sep"></div><h3>Selected part</h3>
+<div class="kv"><span>Name</span><span id="n">—</span></div><div class="kv"><span>X</span><span id="x">—</span></div><div class="kv"><span>Y</span><span id="y">—</span></div><div class="kv"><span>Z</span><span id="z">—</span></div>
+<div class="kv"><span>Opacity</span><span id="opv">100%</span></div><input class="range" id="op" type="range" min=".15" max="1" step=".05" value="1">
+<div class="links"><a id="step" target="_blank">STEP</a><a id="src" target="_blank">Source</a></div>
+<div class="sep"></div><h3>Scene</h3><label class="part"><input id="grid" type="checkbox" checked><span>Ground grid</span></label><label class="part"><input id="axes" type="checkbox" checked><span>XYZ axes</span></label></div>
+<div class="hint"><b>Rotate:</b> left drag · <b>Pan:</b> right drag · <b>Zoom:</b> wheel</div><div id="msg">Loading…</div></div>
+<script type="module">
+import * as THREE from 'three';import{OrbitControls}from'three/addons/controls/OrbitControls.js';import{STLLoader}from'three/addons/loaders/STLLoader.js';
+THREE.Object3D.DEFAULT_UP.set(0,0,1);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xf4f6f2);
+const cam=new THREE.PerspectiveCamera(35,innerWidth/innerHeight,.1,10000);cam.up.set(0,0,1);cam.position.set(180,-220,160);
+const ren=new THREE.WebGLRenderer({antialias:true});ren.setPixelRatio(Math.min(devicePixelRatio,2));ren.setSize(innerWidth,innerHeight);document.getElementById('view').appendChild(ren.domElement);
+const ctl=new OrbitControls(cam,ren.domElement);ctl.enableDamping=true;ctl.screenSpacePanning=true;
+scene.add(new THREE.HemisphereLight(0xffffff,0xb9c2b8,2.2));const dl=new THREE.DirectionalLight(0xffffff,3);dl.position.set(160,-120,240);scene.add(dl);
+const gh=new THREE.GridHelper(420,42,0xb8c0b6,0xd9ddd7);gh.rotation.x=Math.PI/2;scene.add(gh);const ax=new THREE.AxesHelper(95);scene.add(ax);
+const root=new THREE.Group();scene.add(root);const meshes=new Map();let sel=null,spin=false,wire=false;
+const msg=document.getElementById('msg');function note(s){msg.textContent=s;msg.style.display='block';setTimeout(function(){msg.style.display='none'},1700)}
+function pick(m){sel=m;if(!m)return;document.querySelectorAll('.part[data-id]').forEach(function(e){e.classList.toggle('sel',e.dataset.id===m.userData.p.id)});const b=new THREE.Box3().setFromObject(m),s=new THREE.Vector3();b.getSize(s);document.getElementById('n').textContent=m.userData.p.name;document.getElementById('x').textContent=s.x.toFixed(1)+' mm';document.getElementById('y').textContent=s.y.toFixed(1)+' mm';document.getElementById('z').textContent=s.z.toFixed(1)+' mm';document.getElementById('step').href=m.userData.p.step;document.getElementById('src').href=m.userData.p.source;document.getElementById('op').value=m.material.opacity;document.getElementById('opv').textContent=Math.round(m.material.opacity*100)+'%'}
+function fit(v){let box=new THREE.Box3();meshes.forEach(function(m){if(m.visible)box.expandByObject(m)});if(box.isEmpty())return;let c=new THREE.Vector3(),s=new THREE.Vector3();box.getCenter(c);box.getSize(s);let d=Math.max(s.x,s.y,s.z)/Math.tan(THREE.MathUtils.degToRad(cam.fov*.5))*.75;let dirs={iso:new THREE.Vector3(1,-1,.8),front:new THREE.Vector3(0,-1,0),right:new THREE.Vector3(1,0,0),top:new THREE.Vector3(0,0,1)};let q=(dirs[v]||cam.position.clone().sub(ctl.target)).normalize();cam.position.copy(c.clone().add(q.multiplyScalar(d)));cam.up.set(0,0,1);if(v==='top')cam.up.set(0,1,0);ctl.target.copy(c);ctl.update()}
+const man=await fetch('./models.json',{cache:'no-store'}).then(function(r){return r.json()});const list=document.getElementById('parts'),loader=new STLLoader();
+for(let i=0;i<man.parts.length;i++){let p=man.parts[i],row=document.createElement('div');row.className='part';row.dataset.id=p.id;row.innerHTML='<input type="checkbox" checked><span>'+p.name+'</span>';list.appendChild(row);let ab=await fetch(p.stl+'?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.arrayBuffer()});let g=loader.parse(ab);g.computeVertexNormals();let mat=new THREE.MeshStandardMaterial({color:0x66866a,roughness:.58,metalness:.04,transparent:true});let m=new THREE.Mesh(g,mat);m.userData.p=p;root.add(m);meshes.set(p.id,m);row.onclick=function(e){if(e.target.tagName!=='INPUT')pick(m)};row.querySelector('input').onchange=function(e){m.visible=e.target.checked};if(i===0)pick(m)}
+fit('iso');note('Model loaded');
+document.querySelectorAll('[data-v]').forEach(function(b){b.onclick=function(){fit(b.dataset.v)}});document.getElementById('fit').onclick=function(){fit()};document.getElementById('wire').onclick=function(){wire=!wire;this.classList.toggle('on',wire);meshes.forEach(function(m){m.material.wireframe=wire})};document.getElementById('spin').onclick=function(){spin=!spin;this.classList.toggle('on',spin)};document.getElementById('grid').onchange=function(){gh.visible=this.checked};document.getElementById('axes').onchange=function(){ax.visible=this.checked};document.getElementById('op').oninput=function(){if(sel){sel.material.opacity=+this.value;sel.material.depthWrite=sel.material.opacity>.98;document.getElementById('opv').textContent=Math.round(sel.material.opacity*100)+'%'}};
+const ray=new THREE.Raycaster(),pt=new THREE.Vector2();ren.domElement.onclick=function(e){const r=ren.domElement.getBoundingClientRect();pt.x=(e.clientX-r.left)/r.width*2-1;pt.y=-(e.clientY-r.top)/r.height*2+1;ray.setFromCamera(pt,cam);const h=ray.intersectObjects(Array.from(meshes.values()).filter(function(m){return m.visible}));if(h[0])pick(h[0].object)};
+addEventListener('resize',function(){cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)});const clock=new THREE.Clock();function loop(){requestAnimationFrame(loop);if(spin)root.rotation.z+=clock.getDelta()*.32;else clock.getDelta();ctl.update();ren.render(scene,cam)}loop();
+</script></body></html>
