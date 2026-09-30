@@ -41,7 +41,7 @@ docs/
   index.html                        Interactive Three.js viewer
   models.json                       Viewer part manifest
 
-skills/
+.agents/skills/
   mechanical-product-design/
     SKILL.md                         Mechanical design + assembly workflow
 
