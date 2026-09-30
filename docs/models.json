@@ -1,0 +1,16 @@
+{
+  "project": "Rangoli Printer Prototype",
+  "units": "mm",
+  "parts": [
+    {
+      "id": "hopper-shell-v1",
+      "name": "Hopper shell V1",
+      "stl": "https://raw.githubusercontent.com/bhadkamkar9snehil/HWThrowAway/main/exports/rangoli_hopper_shell_v1.stl",
+      "step": "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/exports/rangoli_hopper_shell_v1.step",
+      "source": "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/cad/hopper.py",
+      "visible": true,
+      "position": [0, 0, 0],
+      "rotationDeg": [0, 0, 0]
+    }
+  ]
+}
