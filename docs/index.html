@@ -2,57 +2,110 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Rangoli Printer — 3D Prototype Viewer</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rangoli CAD Library</title>
 <style>
-:root{--bg:#f4f6f2;--panel:rgba(255,255,255,.94);--line:#d8ddd5;--text:#172017;--muted:#69736a;--accent:#496d50}
-*{box-sizing:border-box}html,body,#app{margin:0;width:100%;height:100%;overflow:hidden;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text)}
-#view{position:absolute;inset:0}canvas{display:block}
-.bar,.side,.hint{position:absolute;z-index:3;background:var(--panel);border:1px solid var(--line);box-shadow:0 16px 45px rgba(30,45,30,.10);backdrop-filter:blur(10px)}
-.bar{left:18px;right:18px;top:18px;height:58px;border-radius:16px;display:flex;align-items:center;gap:8px;padding:8px 10px 8px 15px}
-.brand{margin-right:auto}.brand b{display:block;font-size:14px}.brand span{font-size:11px;color:var(--muted)}
-button{height:38px;border:1px solid var(--line);border-radius:10px;background:white;padding:0 11px;font-weight:650;font-size:12px;cursor:pointer}button:hover,button.on{background:#e8f0e8}
-.side{left:18px;top:88px;bottom:18px;width:284px;border-radius:16px;padding:16px;overflow:auto}
-h3{margin:0 0 12px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.part{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:center;border-radius:10px;padding:9px;margin-bottom:6px;cursor:pointer}.part:hover,.part.sel{background:#edf3ed}
-input[type=checkbox]{accent-color:var(--accent)}
-.kv{display:flex;justify-content:space-between;gap:12px;font-size:12px;margin:8px 0}.kv span:first-child{color:var(--muted)}
-.sep{height:1px;background:var(--line);margin:16px -16px}
-.range{width:100%;accent-color:var(--accent)}
-.links{display:flex;gap:8px;margin-top:12px}.links a{font-size:11px;text-decoration:none;color:#315b39;border:1px solid #cad7cb;border-radius:8px;padding:7px 9px}
-.hint{right:18px;bottom:18px;border-radius:12px;padding:9px 11px;font-size:11px;color:var(--muted)}
-#msg{position:absolute;z-index:5;top:92px;left:50%;transform:translateX(-50%);background:#18231a;color:white;padding:8px 12px;border-radius:999px;font-size:11px;display:none}
-@media(max-width:760px){.side{width:235px;left:10px;top:78px;bottom:10px}.bar{left:10px;right:10px;top:10px}.bar button{padding:0 8px}.brand span,.hint{display:none}}
+:root{--bg:#f3f4ef;--panel:#fbfcf8;--line:#d3d8ce;--text:#172018;--muted:#6d766c;--soft:#eaede5;--accent:#426b4a;--shadow:0 18px 50px rgba(30,42,30,.11)}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input,a{font:inherit}.app{height:100%;display:grid;grid-template-columns:310px 1fr}.lib{z-index:5;display:flex;flex-direction:column;min-width:0;background:rgba(251,252,248,.96);border-right:1px solid var(--line);backdrop-filter:blur(16px)}
+.brand{padding:18px 16px 12px;display:flex;align-items:center;gap:10px}.logo{width:34px;height:34px;border-radius:10px;background:var(--text);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:850}.brand b{display:block;font-size:13px}.brand small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.brand .grow{flex:1}.repo{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text);text-decoration:none}
+.search{padding:0 13px 11px}.search input{width:100%;height:40px;border:1px solid var(--line);border-radius:11px;background:#fff;padding:0 12px;outline:none;font-size:12px}.search input:focus{border-color:#91a894;box-shadow:0 0 0 3px rgba(66,107,74,.08)}
+.head{padding:0 16px 8px;display:flex;justify-content:space-between;color:var(--muted);font-size:9px;font-weight:750;text-transform:uppercase;letter-spacing:.12em}.list{flex:1;overflow:auto;padding:0 9px 10px}
+.card{width:100%;border:1px solid transparent;border-radius:13px;background:transparent;padding:7px;display:grid;grid-template-columns:62px minmax(0,1fr);align-items:center;gap:10px;text-align:left;cursor:pointer;margin-bottom:4px;color:inherit}.card:hover{background:#f0f2ec}.card.on{background:#fff;border-color:var(--line);box-shadow:0 7px 20px rgba(30,42,30,.06)}
+.thumb{height:52px;border-radius:9px;border:1px solid #dce1d7;background:#e7ebe2;overflow:hidden;display:grid;place-items:center;color:#748074;font-size:9px;font-weight:800;letter-spacing:.08em}.thumb img{width:100%;height:100%;object-fit:contain;background:#f5f6f2}.card b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.card small{display:block;color:var(--muted);font-size:9px;margin-top:4px}
+.foot{padding:10px 13px;border-top:1px solid var(--line);display:flex;align-items:center;gap:8px;color:var(--muted);font-size:9px}.foot span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.foot button{height:30px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:0 9px;font-size:9px;font-weight:750;cursor:pointer}
+.stage{position:relative;min-width:0;overflow:hidden}#view{position:absolute;inset:0}canvas{display:block}.bar{position:absolute;z-index:3;left:14px;right:14px;top:14px;min-height:48px;padding:6px;display:flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:14px;background:rgba(251,252,248,.92);box-shadow:0 8px 30px rgba(30,42,30,.08);backdrop-filter:blur(14px)}
+.bar button{height:34px;border:0;border-radius:9px;background:transparent;padding:0 9px;color:#4e594e;font-size:10px;font-weight:750;cursor:pointer}.bar button:hover,.bar button.on{background:#e6eae2;color:var(--text)}.bar .spacer{flex:1}.state{font-size:9px;color:var(--muted);padding:0 7px}
+.info{position:absolute;z-index:3;right:14px;bottom:14px;width:286px;padding:14px;border:1px solid var(--line);border-radius:15px;background:rgba(251,252,248,.94);box-shadow:var(--shadow);backdrop-filter:blur(14px)}.info h1{margin:0;font-size:14px;line-height:1.25}.path{margin-top:4px;color:var(--muted);font:9px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all}.dims{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0}.dim{background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px}.dim span{display:block;color:var(--muted);font-size:8px}.dim b{display:block;font-size:11px;margin-top:3px}.meta{display:flex;gap:14px;color:var(--muted);font-size:9px;margin-bottom:11px}.actions{display:flex;gap:6px;flex-wrap:wrap}.actions a{height:31px;display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--text);text-decoration:none;padding:0 9px;font-size:9px;font-weight:750}.actions a.primary{background:var(--text);color:#fff;border-color:var(--text)}
+.empty{position:absolute;inset:0;display:none;place-items:center;text-align:center;color:var(--muted);font-size:11px}.empty b{display:block;color:var(--text);font-size:13px;margin-bottom:4px}.toast{position:absolute;z-index:9;top:74px;left:50%;transform:translateX(-50%) translateY(-5px);opacity:0;background:#1e271f;color:#fff;border-radius:99px;padding:8px 11px;font-size:9px;transition:.18s;pointer-events:none}.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}#menu{display:none}
+@media(max-width:720px){.app{display:block}.stage{height:100%}.lib{position:absolute;z-index:8;left:8px;top:70px;bottom:8px;width:min(86vw,310px);border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow);transform:translateX(calc(-100% - 18px));transition:.2s}.lib.open{transform:translateX(0)}#menu{display:block}.bar{left:9px;right:9px;top:9px}.bar [data-v]{display:none}.bar [data-v="iso"]{display:block}.state{display:none}.info{left:9px;right:9px;bottom:9px;width:auto;padding:12px}}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}</script>
 </head>
-<body><div id="app"><div id="view"></div>
-<div class="bar"><div class="brand"><b>Rangoli Printer</b><span>interactive prototype viewer</span></div>
-<button data-v="iso">Iso</button><button data-v="front">Front</button><button data-v="right">Right</button><button data-v="top">Top</button>
-<button id="fit">Fit</button><button id="wire">Wireframe</button><button id="spin">Auto rotate</button></div>
-<div class="side"><h3>Parts</h3><div id="parts"></div><div class="sep"></div><h3>Selected part</h3>
-<div class="kv"><span>Name</span><span id="n">—</span></div><div class="kv"><span>X</span><span id="x">—</span></div><div class="kv"><span>Y</span><span id="y">—</span></div><div class="kv"><span>Z</span><span id="z">—</span></div>
-<div class="kv"><span>Opacity</span><span id="opv">100%</span></div><input class="range" id="op" type="range" min=".15" max="1" step=".05" value="1">
-<div class="links"><a id="step" target="_blank">STEP</a><a id="src" target="_blank">Source</a></div>
-<div class="sep"></div><h3>Scene</h3><label class="part"><input id="grid" type="checkbox" checked><span>Ground grid</span></label><label class="part"><input id="axes" type="checkbox" checked><span>XYZ axes</span></label></div>
-<div class="hint"><b>Rotate:</b> left drag · <b>Pan:</b> right drag · <b>Zoom:</b> wheel</div><div id="msg">Loading…</div></div>
+<body>
+<div class="app">
+<aside class="lib" id="lib">
+  <div class="brand"><div class="logo">CAD</div><div><b>Rangoli CAD Library</b><small id="repoName"></small></div><div class="grow"></div><a class="repo" id="repoLink" target="_blank">↗</a></div>
+  <div class="search"><input id="search" placeholder="Search models"></div>
+  <div class="head"><span>GitHub models</span><span id="count">0</span></div>
+  <div class="list" id="list"></div>
+  <div class="foot"><span id="rev">Connecting to GitHub…</span><button id="sync">Sync</button></div>
+</aside>
+<main class="stage">
+  <div id="view"></div>
+  <div class="bar">
+    <button id="menu">Models</button>
+    <button class="on" data-v="iso">Iso</button><button data-v="front">Front</button><button data-v="right">Right</button><button data-v="top">Top</button>
+    <button id="fit">Fit</button><button id="wire">Wire</button><button id="spin">Spin</button><div class="spacer"></div><span class="state" id="state">Ready</span>
+  </div>
+  <section class="info">
+    <h1 id="title">No model selected</h1><div class="path" id="path">—</div>
+    <div class="dims"><div class="dim"><span>X</span><b id="dx">—</b></div><div class="dim"><span>Y</span><b id="dy">—</b></div><div class="dim"><span>Z</span><b id="dz">—</b></div></div>
+    <div class="meta"><span id="format">—</span><span id="size">—</span></div>
+    <div class="actions"><a class="primary" id="download" target="_blank">Download</a><a id="github" target="_blank">GitHub</a><a id="step" target="_blank" hidden>STEP</a><a id="source" target="_blank" hidden>Source</a></div>
+  </section>
+  <div class="empty" id="empty"><div><b>No previewable exports found</b>Add STL, OBJ, GLB or GLTF files to the repository.</div></div><div class="toast" id="toast"></div>
+</main>
+</div>
 <script type="module">
-import * as THREE from 'three';import{OrbitControls}from'three/addons/controls/OrbitControls.js';import{STLLoader}from'three/addons/loaders/STLLoader.js';
+import * as THREE from 'three';
+import{OrbitControls}from'three/addons/controls/OrbitControls.js';
+import{STLLoader}from'three/addons/loaders/STLLoader.js';
+import{OBJLoader}from'three/addons/loaders/OBJLoader.js';
+import{GLTFLoader}from'three/addons/loaders/GLTFLoader.js';
+
+const OWNER='bhadkamkar9snehil',REPO='HWThrowAway',BRANCH='main';
+const API='https://api.github.com/repos/'+OWNER+'/'+REPO+'/git/trees/'+BRANCH+'?recursive=1';
+const REPOURL='https://github.com/'+OWNER+'/'+REPO;
+const E=id=>document.getElementById(id);
+const ex=p=>(p.split('.').pop()||'').toLowerCase();
+const stem=p=>p.split('/').pop().replace(/\.[^.]+$/,'');
+const enc=p=>p.split('/').map(encodeURIComponent).join('/');
+const raw=p=>'https://raw.githubusercontent.com/'+OWNER+'/'+REPO+'/'+BRANCH+'/'+enc(p);
+const gh=p=>REPOURL+'/blob/'+BRANCH+'/'+enc(p);
+const pretty=s=>s.replace(/^rangoli[_-]?/i,'').replace(/[_-]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+const bytes=n=>n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(1)+' MB';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+E('repoName').textContent=OWNER+'/'+REPO;E('repoLink').href=REPOURL;
+
 THREE.Object3D.DEFAULT_UP.set(0,0,1);
-const scene=new THREE.Scene();scene.background=new THREE.Color(0xf4f6f2);
-const cam=new THREE.PerspectiveCamera(35,innerWidth/innerHeight,.1,10000);cam.up.set(0,0,1);cam.position.set(180,-220,160);
-const ren=new THREE.WebGLRenderer({antialias:true});ren.setPixelRatio(Math.min(devicePixelRatio,2));ren.setSize(innerWidth,innerHeight);document.getElementById('view').appendChild(ren.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xf3f4ef);
+const cam=new THREE.PerspectiveCamera(34,1,.1,100000);cam.up.set(0,0,1);cam.position.set(180,-220,160);
+const ren=new THREE.WebGLRenderer({antialias:true});ren.setPixelRatio(Math.min(devicePixelRatio,2));E('view').appendChild(ren.domElement);
 const ctl=new OrbitControls(cam,ren.domElement);ctl.enableDamping=true;ctl.screenSpacePanning=true;
-scene.add(new THREE.HemisphereLight(0xffffff,0xb9c2b8,2.2));const dl=new THREE.DirectionalLight(0xffffff,3);dl.position.set(160,-120,240);scene.add(dl);
-const gh=new THREE.GridHelper(420,42,0xb8c0b6,0xd9ddd7);gh.rotation.x=Math.PI/2;scene.add(gh);const ax=new THREE.AxesHelper(95);scene.add(ax);
-const root=new THREE.Group();scene.add(root);const meshes=new Map();let sel=null,spin=false,wire=false;
-const msg=document.getElementById('msg');function note(s){msg.textContent=s;msg.style.display='block';setTimeout(function(){msg.style.display='none'},1700)}
-function pick(m){sel=m;if(!m)return;document.querySelectorAll('.part[data-id]').forEach(function(e){e.classList.toggle('sel',e.dataset.id===m.userData.p.id)});const b=new THREE.Box3().setFromObject(m),s=new THREE.Vector3();b.getSize(s);document.getElementById('n').textContent=m.userData.p.name;document.getElementById('x').textContent=s.x.toFixed(1)+' mm';document.getElementById('y').textContent=s.y.toFixed(1)+' mm';document.getElementById('z').textContent=s.z.toFixed(1)+' mm';document.getElementById('step').href=m.userData.p.step;document.getElementById('src').href=m.userData.p.source;document.getElementById('op').value=m.material.opacity;document.getElementById('opv').textContent=Math.round(m.material.opacity*100)+'%'}
-function fit(v){let box=new THREE.Box3();meshes.forEach(function(m){if(m.visible)box.expandByObject(m)});if(box.isEmpty())return;let c=new THREE.Vector3(),s=new THREE.Vector3();box.getCenter(c);box.getSize(s);let d=Math.max(s.x,s.y,s.z)/Math.tan(THREE.MathUtils.degToRad(cam.fov*.5))*.75;let dirs={iso:new THREE.Vector3(1,-1,.8),front:new THREE.Vector3(0,-1,0),right:new THREE.Vector3(1,0,0),top:new THREE.Vector3(0,0,1)};let q=(dirs[v]||cam.position.clone().sub(ctl.target)).normalize();cam.position.copy(c.clone().add(q.multiplyScalar(d)));cam.up.set(0,0,1);if(v==='top')cam.up.set(0,1,0);ctl.target.copy(c);ctl.update()}
-const man=await fetch('./models.json',{cache:'no-store'}).then(function(r){return r.json()});const list=document.getElementById('parts'),loader=new STLLoader();
-for(let i=0;i<man.parts.length;i++){let p=man.parts[i],row=document.createElement('div');row.className='part';row.dataset.id=p.id;row.innerHTML='<input type="checkbox" checked><span>'+p.name+'</span>';list.appendChild(row);let ab=await fetch(p.stl+'?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.arrayBuffer()});let g=loader.parse(ab);g.computeVertexNormals();let mat=new THREE.MeshStandardMaterial({color:0x66866a,roughness:.58,metalness:.04,transparent:true});let m=new THREE.Mesh(g,mat);m.userData.p=p;root.add(m);meshes.set(p.id,m);row.onclick=function(e){if(e.target.tagName!=='INPUT')pick(m)};row.querySelector('input').onchange=function(e){m.visible=e.target.checked};if(i===0)pick(m)}
-fit('iso');note('Model loaded');
-document.querySelectorAll('[data-v]').forEach(function(b){b.onclick=function(){fit(b.dataset.v)}});document.getElementById('fit').onclick=function(){fit()};document.getElementById('wire').onclick=function(){wire=!wire;this.classList.toggle('on',wire);meshes.forEach(function(m){m.material.wireframe=wire})};document.getElementById('spin').onclick=function(){spin=!spin;this.classList.toggle('on',spin)};document.getElementById('grid').onchange=function(){gh.visible=this.checked};document.getElementById('axes').onchange=function(){ax.visible=this.checked};document.getElementById('op').oninput=function(){if(sel){sel.material.opacity=+this.value;sel.material.depthWrite=sel.material.opacity>.98;document.getElementById('opv').textContent=Math.round(sel.material.opacity*100)+'%'}};
-const ray=new THREE.Raycaster(),pt=new THREE.Vector2();ren.domElement.onclick=function(e){const r=ren.domElement.getBoundingClientRect();pt.x=(e.clientX-r.left)/r.width*2-1;pt.y=-(e.clientY-r.top)/r.height*2+1;ray.setFromCamera(pt,cam);const h=ray.intersectObjects(Array.from(meshes.values()).filter(function(m){return m.visible}));if(h[0])pick(h[0].object)};
-addEventListener('resize',function(){cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)});const clock=new THREE.Clock();function loop(){requestAnimationFrame(loop);if(spin)root.rotation.z+=clock.getDelta()*.32;else clock.getDelta();ctl.update();ren.render(scene,cam)}loop();
-</script></body></html>
+scene.add(new THREE.HemisphereLight(0xffffff,0xb7c0b3,2.3));const dl=new THREE.DirectionalLight(0xffffff,3);dl.position.set(180,-140,250);scene.add(dl);
+const grid=new THREE.GridHelper(600,60,0xb8beb4,0xdaddd5);grid.rotation.x=Math.PI/2;scene.add(grid);scene.add(new THREE.AxesHelper(75));
+const root=new THREE.Group();scene.add(root);
+let models=[],current=null,obj=null,wire=false,spinning=false,lastView='iso';
+function toast(s){E('toast').textContent=s;E('toast').classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>E('toast').classList.remove('on'),1600)}
+function clear(){if(!obj)return;root.remove(obj);obj.traverse(n=>{n.geometry?.dispose?.();if(n.material){(Array.isArray(n.material)?n.material:[n.material]).forEach(m=>m.dispose?.())}});obj=null}
+function box(){const b=new THREE.Box3().setFromObject(obj),s=new THREE.Vector3(),c=new THREE.Vector3();b.getSize(s);b.getCenter(c);return{s,c}}
+function fit(v){if(!obj)return;lastView=v||lastView;const q=box(),m=Math.max(q.s.x,q.s.y,q.s.z,1),d=m/Math.tan(THREE.MathUtils.degToRad(cam.fov*.5))*.78;
+ const dirs={iso:new THREE.Vector3(1,-1,.8),front:new THREE.Vector3(0,-1,0),right:new THREE.Vector3(1,0,0),top:new THREE.Vector3(0,0,1)},dir=(dirs[lastView]||cam.position.clone().sub(ctl.target)).normalize();
+ cam.position.copy(q.c.clone().add(dir.multiplyScalar(d)));cam.up.set(0,0,1);if(lastView==='top')cam.up.set(0,1,0);cam.near=Math.max(d/1000,.01);cam.far=Math.max(d*50,1000);cam.updateProjectionMatrix();ctl.target.copy(q.c);ctl.update()}
+function materialize(o){o.traverse(n=>{if(!n.isMesh)return;if(current.format==='stl'||current.format==='obj'||!n.material)n.material=new THREE.MeshStandardMaterial({color:0x55785c,roughness:.52,metalness:.05});const a=Array.isArray(n.material)?n.material:[n.material];a.forEach(m=>m.wireframe=wire)})}
+function ready(o){obj=o;materialize(o);root.add(o);const q=box();E('dx').textContent=q.s.x.toFixed(1)+' mm';E('dy').textContent=q.s.y.toFixed(1)+' mm';E('dz').textContent=q.s.z.toFixed(1)+' mm';fit('iso');E('state').textContent='Ready';toast('Model loaded')}
+async function load(m){current=m;clear();render();E('title').textContent=m.name;E('path').textContent=m.path;E('format').textContent=m.format.toUpperCase();E('size').textContent=bytes(m.size||0);E('dx').textContent=E('dy').textContent=E('dz').textContent='…';
+ E('download').href=raw(m.path);E('github').href=gh(m.path);E('step').hidden=!m.step;if(m.step)E('step').href=gh(m.step);E('source').hidden=!m.source;if(m.source)E('source').href=gh(m.source);E('state').textContent='Loading '+m.format.toUpperCase()+'…';
+ const u=raw(m.path)+'?sha='+m.sha;
+ try{if(m.format==='stl'){const ab=await fetch(u,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error(r.status);return r.arrayBuffer()});const g=new STLLoader().parse(ab);g.computeVertexNormals();ready(new THREE.Mesh(g))}
+ else if(m.format==='obj'){const t=await fetch(u,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error(r.status);return r.text()});ready(new OBJLoader().parse(t))}
+ else{new GLTFLoader().load(u,g=>ready(g.scene),undefined,()=>{E('state').textContent='Load failed';toast('Could not load model')})}
+ const url=new URL(location.href);url.searchParams.set('model',m.path);history.replaceState(null,'',url);if(innerWidth<721)E('lib').classList.remove('open')}
+ catch(e){console.error(e);E('state').textContent='Load failed';toast('Could not load model')}}
+function catalog(tree){const blobs=tree.filter(x=>x.type==='blob'),ok=new Set(['stl','obj','glb','gltf']);
+ return blobs.filter(x=>ok.has(ex(x.path))).map(x=>{const s=stem(x.path),siblings=blobs.filter(b=>stem(b.path).toLowerCase()===s.toLowerCase()),step=siblings.find(b=>['step','stp'].includes(ex(b.path))),preview=blobs.find(b=>b.path.toLowerCase()==='previews/'+s.toLowerCase()+'.svg'||b.path.toLowerCase()==='previews/'+s.toLowerCase()+'.png'),src=blobs.find(b=>b.path.startsWith('cad/')&&s.toLowerCase().includes(stem(b.path).toLowerCase()));
+ return{path:x.path,sha:x.sha,size:x.size||0,format:ex(x.path),name:pretty(s),step:step?.path||null,preview:preview?.path||null,source:src?.path||null}}).sort((a,b)=>a.name.localeCompare(b.name))}
+function render(){const q=E('search').value.trim().toLowerCase(),arr=models.filter(x=>!q||x.name.toLowerCase().includes(q)||x.path.toLowerCase().includes(q));E('count').textContent=q?arr.length+'/'+models.length:models.length;
+ E('list').innerHTML=arr.map(x=>'<button class="card '+(current?.path===x.path?'on':'')+'" data-p="'+esc(x.path)+'"><span class="thumb">'+(x.preview?'<img src="'+esc(raw(x.preview))+'" alt="">':esc(x.format.toUpperCase()))+'</span><span><b>'+esc(x.name)+'</b><small>'+esc(x.format.toUpperCase())+' · '+esc(bytes(x.size))+'</small></span></button>').join('');
+ E('list').querySelectorAll('.card').forEach(b=>b.onclick=()=>load(models.find(x=>x.path===b.dataset.p)))}
+async function sync(){E('state').textContent='Reading GitHub…';E('rev').textContent='Syncing repository…';
+ try{const r=await fetch(API,{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});if(!r.ok)throw Error(r.status);const d=await r.json();models=catalog(d.tree||[]);E('rev').textContent='main @ '+(d.sha||'').slice(0,7)+' · live';render();
+ if(!models.length){E('empty').style.display='grid';clear();return}E('empty').style.display='none';const p=new URL(location.href).searchParams.get('model');await load(models.find(x=>x.path===p)||models[0])}
+ catch(e){console.error(e);E('rev').textContent='GitHub sync failed';E('state').textContent='Offline';toast('GitHub API unavailable')}}
+E('search').oninput=render;E('sync').onclick=sync;E('fit').onclick=()=>fit(lastView);E('wire').onclick=function(){wire=!wire;this.classList.toggle('on',wire);if(obj)materialize(obj)};E('spin').onclick=function(){spinning=!spinning;this.classList.toggle('on',spinning)};
+document.querySelectorAll('[data-v]').forEach(b=>b.onclick=function(){document.querySelectorAll('[data-v]').forEach(x=>x.classList.remove('on'));this.classList.add('on');fit(this.dataset.v)});E('menu').onclick=()=>E('lib').classList.toggle('open');
+function resize(){const r=E('view').getBoundingClientRect();ren.setSize(r.width,r.height,false);cam.aspect=r.width/r.height;cam.updateProjectionMatrix()}addEventListener('resize',resize);resize();
+const clock=new THREE.Clock();function loop(){requestAnimationFrame(loop);const dt=clock.getDelta();if(spinning&&obj)root.rotation.z+=dt*.38;ctl.update();ren.render(scene,cam)}loop();sync();
+</script>
+</body></html>
