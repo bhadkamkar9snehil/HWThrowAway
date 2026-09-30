@@ -4,7 +4,7 @@ This repository is for a physical mechanical prototype. Treat geometry as engine
 
 Before creating or changing mechanical parts, read and follow:
 
-- `skills/mechanical-product-design/SKILL.md`
+- `.agents/skills/mechanical-product-design/SKILL.md`
 
 Project conventions:
 
