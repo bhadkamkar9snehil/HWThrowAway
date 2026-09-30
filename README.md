@@ -57,6 +57,10 @@ python cad/hopper.py
 
 The SVG is not an AI illustration. It is a geometric projection generated directly from the same CadQuery solid used for the STEP/STL outputs.
 
+## Reusable CAD viewer setup guide
+
+For setting up another GitHub repository with the same browser-based interactive CAD viewing pattern, see [CAD_VIEWER_HANDOVER.md](CAD_VIEWER_HANDOVER.md). It covers repository layout, STEP/STL/GLB roles, Three.js viewer architecture, model discovery, GitHub Pages configuration, deployment verification, troubleshooting, and a handoff prompt for another agent.
+
 ## Design rule
 
 Keep the model parametric. Dimensions and mating/interface decisions belong in source code; STL is an output, not the editable source.
