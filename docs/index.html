@@ -146,7 +146,7 @@ const ui={
   spin:document.getElementById('spinBtn')
 };
 let activeTab='overview',wire=false,xray=false,spin=false,yaw=-0.78,pitch=0.58,distance=260,target=[0,0,0],lastTime=0;
-let pointers=new Map(),pinchDistance=0,mesh=null,gl=null,program=null,buffers=null;
+let pointers=new Map(),pinchDistance=0,mesh=null,gl=null,program=null,buffers=null,canvas=null;
 const selected=MANIFEST.parts[0];
 
 function escapeHtml(v){
@@ -300,7 +300,7 @@ function initViewer(){
   renderModelUI();
   renderPanel();
   mesh=parseAsciiSTL(STL_TEXT);
-  const canvas=document.createElement('canvas');canvas.setAttribute('aria-label','Interactive 3D model');canvas.style.touchAction='none';ui.viewport.prepend(canvas);
+  canvas=document.createElement('canvas');canvas.setAttribute('aria-label','Interactive 3D model');canvas.style.touchAction='none';ui.viewport.prepend(canvas);
   window.canvas=canvas;
   gl=canvas.getContext('webgl',{antialias:true,alpha:true})||canvas.getContext('experimental-webgl');
   if(!gl)throw new Error('WebGL is unavailable in this browser.');
