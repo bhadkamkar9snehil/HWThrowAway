@@ -1,7 +1,31 @@
 schema_version: 1
 risks:
   - id: RISK-VALIDATION-001
-    statement: Future physical-behaviour claims can be wrong until their model parameters are calibrated or otherwise validated.
+    statement: Physical-behaviour claims remain provisional until model parameters are calibrated or otherwise validated.
     severity: medium
     status: open
-    mitigation: Keep those checks UNKNOWN or MODELLED until validation evidence exists.
+    mitigation: Keep physical-behaviour checks UNKNOWN or MODELLED until validation evidence exists.
+
+  - id: RISK-AUGER-001
+    statement: Material may bridge above the hopper throat or refill the screw flights inconsistently.
+    severity: high
+    status: open
+    mitigation: Evaluate across friction and cohesion envelopes in Phase 02 DEM; add inlet agitation only if evidence requires it.
+
+  - id: RISK-AUGER-002
+    statement: Residual material may continue to discharge after the screw stops.
+    severity: high
+    status: open
+    mitigation: Measure stop residual in Phase 02 and compare discharge geometries.
+
+  - id: RISK-AUGER-003
+    statement: Real printed running clearance may differ from nominal CAD clearance enough to bind or leak.
+    severity: medium
+    status: open
+    mitigation: Keep clearance parametric and calibrate it with printer-specific fit coupons before hardware.
+
+  - id: RISK-AUGER-004
+    statement: Material ingress toward end bearings may increase drag over time.
+    severity: medium
+    status: open
+    mitigation: Keep bearings outside the process cavity and evaluate sealing after the metering geometry is stable.
