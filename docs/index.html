@@ -41,7 +41,7 @@ button,select{font:inherit;color:inherit}button{cursor:pointer}a{color:var(--acc
 .stage{grid-column:2;grid-row:2;position:relative;min-width:0;min-height:0;overflow:hidden;background-color:#dce3dc;background-image:linear-gradient(rgba(80,100,84,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(80,100,84,.08) 1px,transparent 1px);background-size:24px 24px}
 #canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
 .viewTitle{position:absolute;z-index:2;left:14px;top:13px;pointer-events:none}.viewTitle .kicker{color:#667269}.viewTitle h1{font-size:19px;line-height:1.2;margin:6px 0 0}.viewTitle p{font-size:11px;color:var(--muted);margin:4px 0 0}
-.phaseBadge{position:absolute;z-index:2;right:12px;top:12px;padding:6px 8px;border:1px solid #9fbca6;border-radius:999px;background:rgba(236,244,237,.92);font:700 10px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--pass);pointer-events:none}
+.phaseBadge{position:absolute;z-index:2;right:12px;top:12px;padding:6px 8px;border:1px solid #9fbca6;border-radius:999px;background:rgba(236,244,237,.92);font:700 10px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--pass);pointer-events:none}.simHud{position:absolute;z-index:3;left:14px;bottom:14px;min-width:250px;padding:10px 11px;border:1px solid var(--line2);border-radius:7px;background:rgba(247,248,245,.94);box-shadow:0 4px 16px rgba(40,50,42,.10);pointer-events:none}.simHud.hidden{display:none}.simHudTop{display:flex;justify-content:space-between;gap:12px;align-items:center}.simHudTitle{font-size:12px;font-weight:750}.simHudTime{font:650 11px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.simHudMeta{display:flex;gap:11px;flex-wrap:wrap;margin-top:6px;font:600 10px/1.3 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--muted)}.simProgress{height:4px;margin-top:8px;border-radius:999px;background:#d8ded7;overflow:hidden}.simProgress>span{display:block;height:100%;width:0;background:var(--accent)}
 .right{grid-column:3;grid-row:2;background:var(--surface);border-left:1px solid var(--line2);min-width:0;min-height:0;display:flex;flex-direction:column}
 .tabs{display:flex;gap:2px;padding:6px;border-bottom:1px solid var(--line);overflow-x:auto}
 .tab{flex:1;min-width:70px;height:32px;border:0;border-radius:5px;background:transparent;font-size:11px;font-weight:650}.tab.active{background:var(--surface3)}.tab:hover{background:var(--surface2)}
@@ -67,7 +67,7 @@ button,select{font:inherit;color:inherit}button{cursor:pointer}a{color:var(--acc
   .controls{margin-left:auto}.btn{height:33px;min-width:32px;padding:0 7px;font-size:11px}.btn.view,.sep{display:none}
   .left{display:none}.stage{grid-column:1;grid-row:2}.right{grid-column:1;grid-row:3;border-left:0;border-top:1px solid var(--line2)}
   .rightHead{display:none}.tabs{padding:5px 6px}.tab{height:31px;font-size:10px;min-width:64px}.panel{padding:0 12px 8px}
-  .viewTitle{left:12px;top:11px}.viewTitle h1{font-size:17px}.viewTitle p{font-size:10px}.phaseBadge{right:10px;top:10px;font-size:9px}
+  .viewTitle{left:12px;top:11px}.viewTitle h1{font-size:17px}.viewTitle p{font-size:10px}.phaseBadge{right:10px;top:10px;font-size:9px}.simHud{left:10px;right:10px;bottom:10px;min-width:0;padding:8px 9px}.simHudTitle{font-size:11px}.simHudMeta{font-size:9px}
   .status{grid-column:1;grid-row:4;font-size:9px}
 }
 @media(max-width:380px){.mobileSelect{width:132px}.btn{padding:0 6px}.phaseBadge{display:none}}
@@ -101,6 +101,7 @@ button,select{font:inherit;color:inherit}button{cursor:pointer}a{color:var(--acc
     <canvas id="canvas" aria-label="Interactive 3D prototype"></canvas>
     <div class="viewTitle"><div class="kicker">Interactive 3D</div><h1 id="viewName">Rangoli dispenser assembly</h1><p id="viewMeta">Loading current design…</p></div>
     <div id="phaseBadge" class="phaseBadge">P01 KINEMATICS PASS</div>
+    <div id="simHud" class="simHud hidden"><div class="simHudTop"><span class="simHudTitle">Powder-flow screening</span><span id="simHudTime" class="simHudTime">0.0 s</span></div><div class="simHudMeta"><span>60 RPM</span><span>cohesion 0.8×g</span><span id="simHudParticles">220 particles</span></div><div class="simProgress"><span id="simProgressBar"></span></div></div>
   </main>
 
   <aside class="right">
@@ -129,7 +130,7 @@ let sceneObjects=[];
 
 const $=id=>document.getElementById(id);
 const tree=$("tree"),mobileSelect=$("mobileSelect"),panel=$("panel"),statusText=$("statusText");
-const viewName=$("viewName"),viewMeta=$("viewMeta"),inspectName=$("inspectName"),inspectSub=$("inspectSub"),phaseBadge=$("phaseBadge");
+const viewName=$("viewName"),viewMeta=$("viewMeta"),inspectName=$("inspectName"),inspectSub=$("inspectSub"),phaseBadge=$("phaseBadge"),simHud=$("simHud"),simHudTime=$("simHudTime"),simHudParticles=$("simHudParticles"),simProgressBar=$("simProgressBar");
 
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
 function getPart(id){return MODELS.parts.find(p=>p.id===id)}
@@ -245,22 +246,43 @@ function updatePowder(dt){
   if(powderClock<1)screwAngle=0;
   else if(powderClock<8)screwAngle=2*Math.PI*(rpm/60)*(powderClock-1);
   else screwAngle=2*Math.PI*(rpm/60)*7;
+  const frame=currentPowderFrame();
+  simHudTime.textContent=powderClock.toFixed(1)+" s";
+  simHudParticles.textContent=((frame?.particles_xz_mm?.length)||0)+" active particles";
+  simProgressBar.style.width=Math.max(0,Math.min(100,powderClock/end*100)).toFixed(1)+"%";
 }
 function drawPowder(pv){
   if(!powderPlaying||!powderData)return;
   const frame=currentPowderFrame();if(!frame)return;
   const pts=frame.particles_xz_mm||[],flat=new Float32Array(pts.length*3);
   for(let i=0;i<pts.length;i++){flat[i*3]=pts[i][0];flat[i*3+1]=0;flat[i*3+2]=pts[i][1]}
-  gl.useProgram(particleProgram);gl.bindBuffer(gl.ARRAY_BUFFER,particleBuffer);gl.bufferData(gl.ARRAY_BUFFER,flat,gl.DYNAMIC_DRAW);gl.enableVertexAttribArray(particleProgram.pos);gl.vertexAttribPointer(particleProgram.pos,3,gl.FLOAT,false,0,0);gl.uniformMatrix4fv(particleProgram.mvp,false,pv);gl.uniform1f(particleProgram.size,Math.min(devicePixelRatio||1,2)*7.0);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.drawArrays(gl.POINTS,0,pts.length);gl.depthMask(true);gl.disable(gl.BLEND);gl.useProgram(program);
+  gl.useProgram(particleProgram);gl.bindBuffer(gl.ARRAY_BUFFER,particleBuffer);gl.bufferData(gl.ARRAY_BUFFER,flat,gl.DYNAMIC_DRAW);gl.enableVertexAttribArray(particleProgram.pos);gl.vertexAttribPointer(particleProgram.pos,3,gl.FLOAT,false,0,0);gl.uniformMatrix4fv(particleProgram.mvp,false,pv);gl.uniform1f(particleProgram.size,Math.min(devicePixelRatio||1,2)*10.0);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.drawArrays(gl.POINTS,0,pts.length);gl.depthMask(true);gl.disable(gl.BLEND);gl.useProgram(program);
 }
-async function togglePowder(){
+async function startPowder(){
   if(!powderData)powderData=await loadJSON("./simulation/auger/phase-02a-medium-60rpm.json",null);
   if(!powderData){statusText.textContent="Powder animation asset unavailable";return}
-  powderPlaying=!powderPlaying;simulateScrew=false;powderClock=0;
-  if(powderPlaying){xray=true;$("xrayBtn").classList.add("active");$("xrayBtn").setAttribute("aria-pressed","true");statusText.textContent="Phase 02A · 60 RPM · medium-cohesion screening animation"}
-  else statusText.textContent="Phase 02A screening loaded · full 3D DEM not run";
+  if(getPart(selectedId)?.view!=="system"){
+    selectedId="system-assembly-v1";
+    renderTree();
+    mobileSelect.value=selectedId;
+    viewName.textContent="Rangoli dispenser assembly";
+    viewMeta.textContent="Phase 02A powder-flow screening";
+  }
+  powderPlaying=true;simulateScrew=false;powderClock=0;screwAngle=0;
+  xray=true;$("xrayBtn").classList.add("active");$("xrayBtn").setAttribute("aria-pressed","true");
+  target=[25,0,50];distance=190;setCamera("front");
+  simHud.classList.remove("hidden");
+  phaseBadge.textContent="P02A SIMULATION PLAYING";
+  statusText.textContent="Phase 02A · 60 RPM · medium-cohesion powder screening · MODELLED / UNCALIBRATED";
   renderInspector();
 }
+function stopPowder(){
+  powderPlaying=false;powderClock=0;screwAngle=0;
+  simHud.classList.add("hidden");
+  phaseBadge.textContent="P02A POWDER MODELLED";
+  statusText.textContent="Phase 02A screening available · full 3D DEM not run";
+}
+async function togglePowder(){if(powderPlaying){stopPowder();renderInspector()}else await startPowder()}
 function buffer(data){const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.STATIC_DRAW);return b}
 function makeObject(name,b,color,alpha,rotating){return{name,color,alpha,rotating,count:b.p.length/3,edgeCount:b.e.length/3,pos:buffer(b.p),nor:buffer(b.n),edge:buffer(b.e),edgeNor:buffer(new Array(b.e.length).fill(0))}}
 function initGL(){
@@ -272,12 +294,13 @@ function visible(name){const v=getPart(selectedId)?.view||"system";if(v==="syste
 function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),w=Math.max(1,Math.round(r.width*d)),h=Math.max(1,Math.round(r.height*d));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}gl.viewport(0,0,w,h)}
 function eye(){const cp=Math.cos(pitch),sp=Math.sin(pitch),cy=Math.cos(yaw),sy=Math.sin(yaw);return[target[0]+distance*cp*cy,target[1]+distance*cp*sy,target[2]+distance*sp]}
 function draw(t){
-  resize();const dt=Math.min(((t-lastTime)||0)/1000,.05);lastTime=t;if(rotateView)yaw+=dt*.35;if(simulateScrew)screwAngle+=dt*1.7;
-  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);const pv=matMul(perspective(Math.PI/5.2,canvas.width/canvas.height,.1,5000),lookAt(eye(),target,[0,0,1]));
+  resize();const dt=Math.min(((t-lastTime)||0)/1000,.05);lastTime=t;if(rotateView&&!powderPlaying)yaw+=dt*.35;if(powderPlaying)updatePowder(dt);else if(simulateScrew)screwAngle+=dt*1.7;
+  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(program);const pv=matMul(perspective(Math.PI/5.2,canvas.width/canvas.height,.1,5000),lookAt(eye(),target,[0,0,1]));
   for(const o of sceneObjects){if(!visible(o.name))continue;const model=o.rotating?rotX(screwAngle):identity(),mvp=matMul(pv,model);gl.uniformMatrix4fv(program.mvp,false,mvp);gl.uniform3f(program.color,...o.color);let alpha=xray?Math.min(o.alpha,.22):o.alpha;if(o.name==="housing"&&!xray&&(getPart(selectedId)?.view==="system"||getPart(selectedId)?.view==="auger"))alpha=.34;gl.uniform1f(program.alpha,alpha);if(alpha<.99){gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false)}else{gl.disable(gl.BLEND);gl.depthMask(true)}
     if(wire){gl.uniform1f(program.wire,1);bind(o.edge,program.pos);bind(o.edgeNor,program.nor);gl.drawArrays(gl.LINES,0,o.edgeCount)}else{gl.uniform1f(program.wire,0);bind(o.pos,program.pos);bind(o.nor,program.nor);gl.drawArrays(gl.TRIANGLES,0,o.count)}
     gl.depthMask(true);
   }
+  drawPowder(pv);
   requestAnimationFrame(draw);
 }
 function fit(view){
@@ -293,7 +316,7 @@ function renderTree(){
   MODELS.parts.forEach((p,i)=>{const b=document.createElement("button");b.type="button";b.className="treeRow"+(p.id===selectedId?" selected":"");b.innerHTML='<span class="icon"></span><span><div class="treeName">'+esc(p.name)+'</div><div class="treeMeta">'+esc(p.type)+'</div></span>';b.onclick=()=>select(p.id);tree.appendChild(b);const o=document.createElement("option");o.value=p.id;o.textContent=p.name;mobileSelect.appendChild(o)});
   mobileSelect.value=selectedId;
 }
-function select(id){selectedId=id;simulateScrew=false;powderPlaying=false;powderClock=0;screwAngle=0;renderTree();renderInspector();const p=getPart(id);viewName.textContent=p?.name||id;viewMeta.textContent=p?.view==="system"?"Hopper + metering auger":p?.view==="auger"?"Auger housing + screw":p?.type||"component";const hasPowder=(EVIDENCE.simulations||[]).some(x=>x.id==="SIM-AUG-P02A-COARSE-DEM");phaseBadge.style.display="block";phaseBadge.textContent=hasPowder?"P02A POWDER MODELLED":"P01 KINEMATICS PASS";fit("iso")}
+function select(id){selectedId=id;simulateScrew=false;if(powderPlaying)stopPowder();powderClock=0;screwAngle=0;renderTree();renderInspector();const p=getPart(id);viewName.textContent=p?.name||id;viewMeta.textContent=p?.view==="system"?"Hopper + metering auger":p?.view==="auger"?"Auger housing + screw":p?.type||"component";const hasPowder=(EVIDENCE.simulations||[]).some(x=>x.id==="SIM-AUG-P02A-COARSE-DEM");phaseBadge.style.display="block";phaseBadge.textContent=hasPowder?"P02A POWDER MODELLED":"P01 KINEMATICS PASS";fit("iso")}
 function reqs(){const c=evidenceComponent(selectedId);return c?(EVIDENCE.requirements||[]).filter(r=>r.component===c):(EVIDENCE.requirements||[])}
 function overviewHTML(){
   const rs=reqs(),pass=rs.filter(r=>r.status==="PASS").length,fail=rs.filter(r=>r.status==="FAIL").length,unk=rs.filter(r=>r.status==="UNKNOWN").length;
@@ -318,7 +341,7 @@ function renderInspector(){
 function setupUI(){
   document.querySelectorAll("[data-camera]").forEach(b=>b.onclick=()=>setCamera(b.dataset.camera));
   $("fitBtn").onclick=()=>fit("iso");$("wireBtn").onclick=()=>{wire=!wire;$("wireBtn").classList.toggle("active",wire);$("wireBtn").setAttribute("aria-pressed",String(wire))};$("xrayBtn").onclick=()=>{xray=!xray;$("xrayBtn").classList.toggle("active",xray);$("xrayBtn").setAttribute("aria-pressed",String(xray))};$("rotateBtn").onclick=()=>{rotateView=!rotateView;$("rotateBtn").classList.toggle("active",rotateView);$("rotateBtn").setAttribute("aria-pressed",String(rotateView))};
-  document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");activeTab=b.dataset.tab;renderInspector()});
+  document.querySelectorAll(".tab").forEach(b=>b.onclick=async()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");activeTab=b.dataset.tab;if(activeTab==="simulation"){renderInspector();await startPowder()}else{if(powderPlaying)stopPowder();renderInspector()}});
   mobileSelect.onchange=()=>select(mobileSelect.value);
   canvas.addEventListener("pointerdown",e=>{canvas.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===2){const a=[...pointers.values()];pinchDistance=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)}});
   canvas.addEventListener("pointermove",e=>{const prev=pointers.get(e.pointerId);if(!prev)return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===1){yaw-=(e.clientX-prev.x)*.008;pitch=Math.max(-1.42,Math.min(1.42,pitch+(e.clientY-prev.y)*.008))}else if(pointers.size===2){const a=[...pointers.values()],d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);if(pinchDistance>0)distance=Math.max(30,Math.min(700,distance*(pinchDistance/d)));pinchDistance=d}});
