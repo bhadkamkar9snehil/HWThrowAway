@@ -1,16 +1,50 @@
 {
   "project": "Rangoli Printer Prototype",
   "units": "mm",
+  "default": "system-assembly-v1",
   "parts": [
+    {
+      "id": "system-assembly-v1",
+      "name": "Rangoli dispenser assembly",
+      "type": "assembly",
+      "visualization": "procedural_from_committed_parameters",
+      "components": ["hopper-shell-v1", "auger-meter-v1"],
+      "visible": true
+    },
     {
       "id": "hopper-shell-v1",
       "name": "Hopper shell V1",
-      "stl": "https://raw.githubusercontent.com/bhadkamkar9snehil/HWThrowAway/main/exports/rangoli_hopper_shell_v1.stl",
-      "step": "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/exports/rangoli_hopper_shell_v1.step",
+      "type": "component",
       "source": "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/cad/hopper.py",
-      "visible": true,
-      "position": [0, 0, 0],
-      "rotationDeg": [0, 0, 0]
+      "visualization": "procedural_from_committed_parameters",
+      "visible": true
+    },
+    {
+      "id": "auger-meter-v1",
+      "name": "Auger meter V1",
+      "type": "assembly",
+      "source": "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/cad/auger.py",
+      "simulation": "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/simulation/auger/results/phase-01-rotation-clearance.json",
+      "visualization": "procedural_from_committed_parameters",
+      "visible": true
+    },
+    {
+      "id": "auger-screw-v1",
+      "name": "Auger screw V1",
+      "type": "subcomponent",
+      "parent": "auger-meter-v1",
+      "source": "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/cad/auger.py",
+      "visualization": "procedural_from_committed_parameters",
+      "visible": true
+    },
+    {
+      "id": "auger-housing-v1",
+      "name": "Auger housing V1",
+      "type": "subcomponent",
+      "parent": "auger-meter-v1",
+      "source": "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/cad/auger.py",
+      "visualization": "procedural_from_committed_parameters",
+      "visible": true
     }
   ]
 }
