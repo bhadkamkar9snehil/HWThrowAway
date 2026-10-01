@@ -238,9 +238,23 @@ def load_simulation_results() -> list[dict[str, Any]]:
                 item[key] = raw[key]
 
         if raw.get("component") == "auger-meter-v1":
-            item["id"] = "SIM-AUG-P01-ROT"
-            item["phase"] = "Phase 01"
-            item["name"] = "Sampled rotational clearance"
+            if "coarse-dem" in simulation_name:
+                item["id"] = "SIM-AUG-P02A-COARSE-DEM"
+                item["phase"] = "Phase 02A"
+                item["name"] = "Reduced-order powder-flow DEM"
+                item["type"] = "COARSE_DEM"
+                item["status"] = raw.get("status", "MODELLED_UNCALIBRATED")
+                item["scope"] = (
+                    "2D coarse-grained screening of transport, delivery "
+                    "pulsation, cohesion sensitivity and stop residual."
+                )
+                item["animation_source"] = (
+                    "docs/simulation/auger/phase-02a-medium-60rpm.json"
+                )
+            else:
+                item["id"] = "SIM-AUG-P01-ROT"
+                item["phase"] = "Phase 01"
+                item["name"] = "Sampled rotational clearance"
 
         simulations.append(item)
 

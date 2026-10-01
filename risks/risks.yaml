@@ -29,3 +29,9 @@ risks:
     severity: medium
     status: open
     mitigation: Keep bearings outside the process cavity and evaluate sealing after the metering geometry is stable.
+
+  - id: RISK-AUGER-005
+    statement: Reduced-order powder screening shows strongly pulsatile discharge, worsening sharply as cohesion rises.
+    severity: high
+    status: open
+    mitigation: Sweep pitch, clearance, inlet and discharge geometry in Phase 02A before promoting a design to full 3D DEM.

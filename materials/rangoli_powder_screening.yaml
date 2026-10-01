@@ -1,0 +1,31 @@
+schema_version: 1
+material:
+  id: rangoli-powder-screening-v1
+  name: Fine rangoli powder screening envelope
+  status: uncalibrated
+  purpose: Phase 02A reduced-order DEM sensitivity screening
+
+coarse_graining:
+  particle_diameter_mm: 2.0
+  note: Represents groups of much finer real particles; not the physical grain size.
+
+contact_model:
+  friction_coefficient: 0.50
+  normal_stiffness_model_units: 35000
+  normal_damping_model_units: 160
+  tangential_damping_model_units: 80
+  cohesion_range_mm: 0.35
+
+cohesion_sweep:
+  definition: attractive acceleration divided by gravitational acceleration
+  values: [0.15, 0.8, 2.0, 5.0]
+
+operating_points:
+  control_rpm: 0
+  comparison_rpm: 30
+  baseline_rpm: 60
+
+limitations:
+  - Not calibrated to measured rangoli bulk density, friction, cohesion or particle-size distribution.
+  - No rolling resistance, electrostatics, humidity or air entrainment.
+  - Do not convert particle counts to grams without calibration.

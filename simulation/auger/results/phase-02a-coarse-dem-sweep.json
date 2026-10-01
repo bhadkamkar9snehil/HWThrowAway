@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "simulation": "phase-02a-reduced-order-coarse-dem",
+  "component": "auger-meter-v1",
+  "status": "MODELLED_UNCALIBRATED",
+  "model": {
+    "dimension": "2D longitudinal section",
+    "contact": "soft-sphere normal spring/dashpot + tangential friction + short-range cohesion",
+    "coarse_particle_diameter_mm": 2,
+    "particle_count": 220,
+    "friction_coefficient": 0.5,
+    "cohesion_metric": "attractive acceleration / particle weight acceleration",
+    "time_step_s": 0.0005,
+    "settle_s": 1,
+    "run_s": 7,
+    "stop_s": 2,
+    "screw_representation": "moving axial intersections of the 10 mm helical flight"
+  },
+  "geometry": {
+    "hopper_clear_outlet_mm": 12,
+    "barrel_inner_diameter_mm": 16,
+    "screw_outer_diameter_mm": 15.2,
+    "radial_clearance_mm": 0.4,
+    "pitch_mm": 10,
+    "discharge_clear_diameter_mm": 10
+  },
+  "scenarios": [
+    {
+      "rpm": 0,
+      "cohesion_to_weight": 0.8,
+      "particle_count": 220,
+      "coarse_particle_diameter_mm": 2,
+      "entered_barrel": 220,
+      "discharged_total": 2,
+      "discharged_during_settle": 2,
+      "discharged_during_run": 0,
+      "stop_residual_particles": 0,
+      "delivery_bins_particles_per_s": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "delivery_cv": null,
+      "max_barrel_occupancy": 191
+    },
+    {
+      "rpm": 30,
+      "cohesion_to_weight": 0.8,
+      "particle_count": 220,
+      "coarse_particle_diameter_mm": 2,
+      "entered_barrel": 220,
+      "discharged_total": 156,
+      "discharged_during_settle": 2,
+      "discharged_during_run": 144,
+      "stop_residual_particles": 10,
+      "delivery_bins_particles_per_s": [
+        3,
+        7,
+        23,
+        20,
+        39,
+        20,
+        32
+      ],
+      "delivery_cv": 0.5721480534457217,
+      "max_barrel_occupancy": 191
+    },
+    {
+      "rpm": 60,
+      "cohesion_to_weight": 0.15,
+      "particle_count": 220,
+      "coarse_particle_diameter_mm": 2,
+      "entered_barrel": 220,
+      "discharged_total": 206,
+      "discharged_during_settle": 6,
+      "discharged_during_run": 198,
+      "stop_residual_particles": 2,
+      "delivery_bins_particles_per_s": [
+        14,
+        37,
+        48,
+        42,
+        28,
+        18,
+        11
+      ],
+      "delivery_cv": 0.4745862610437781,
+      "max_barrel_occupancy": 192
+    },
+    {
+      "rpm": 60,
+      "cohesion_to_weight": 0.8,
+      "particle_count": 220,
+      "coarse_particle_diameter_mm": 2,
+      "entered_barrel": 220,
+      "discharged_total": 217,
+      "discharged_during_settle": 2,
+      "discharged_during_run": 215,
+      "stop_residual_particles": 0,
+      "delivery_bins_particles_per_s": [
+        7,
+        30,
+        62,
+        46,
+        36,
+        22,
+        12
+      ],
+      "delivery_cv": 0.5810417529392654,
+      "max_barrel_occupancy": 191
+    },
+    {
+      "rpm": 60,
+      "cohesion_to_weight": 2,
+      "particle_count": 220,
+      "coarse_particle_diameter_mm": 2,
+      "entered_barrel": 220,
+      "discharged_total": 220,
+      "discharged_during_settle": 0,
+      "discharged_during_run": 220,
+      "stop_residual_particles": 0,
+      "delivery_bins_particles_per_s": [
+        0,
+        20,
+        70,
+        53,
+        42,
+        30,
+        5
+      ],
+      "delivery_cv": 0.7494626173973143,
+      "max_barrel_occupancy": 195
+    },
+    {
+      "rpm": 60,
+      "cohesion_to_weight": 5,
+      "particle_count": 220,
+      "coarse_particle_diameter_mm": 2,
+      "entered_barrel": 220,
+      "discharged_total": 220,
+      "discharged_during_settle": 0,
+      "discharged_during_run": 220,
+      "stop_residual_particles": 0,
+      "delivery_bins_particles_per_s": [
+        0,
+        0,
+        0,
+        114,
+        106,
+        0,
+        0
+      ],
+      "delivery_cv": 1.5826016868351789,
+      "max_barrel_occupancy": 204
+    }
+  ],
+  "interpretation": {
+    "control": "At 0 RPM no particles discharged during the driven interval; transport in this reduced model is caused by screw motion.",
+    "baseline": "At 60 RPM and cohesion/weight=0.8, 215/220 coarse particles discharged during the 7 s driven interval with delivery CV 0.581.",
+    "cohesion_sensitivity": "Delivery becomes increasingly burst-like with cohesion; CV rises from 0.475 at cohesion/weight=0.15 to 1.583 at 5.0.",
+    "confidence": "SCREENING_ONLY_UNCALIBRATED"
+  },
+  "limitations": [
+    "2D longitudinal reduction, not full 3D DEM.",
+    "2 mm coarse grains represent groups of much finer real rangoli particles.",
+    "Cohesion values are dimensionless screening envelopes, not measured material properties.",
+    "No rolling resistance, electrostatics, air entrainment or humidity model.",
+    "Mass flow in g/s is intentionally not reported until calibration/full 3D DEM."
+  ]
+}
