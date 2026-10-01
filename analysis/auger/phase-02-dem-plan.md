@@ -52,3 +52,17 @@ Use a reduced DOE first, then expand around sensitive regions.
 Prefer geometry that does not bridge, has monotonic delivery per revolution, low relative dose variation, useful torque margin, small stop residual, and does not collapse under modest friction/cohesion changes.
 
 Exact limits wait until deposition mass/line-width/travel-speed requirements are defined.
+
+
+## Update — Phase 02A executed
+
+The reduced-order 2D coarse-grained DEM screen has now been executed and stored in:
+
+- `simulation/auger/results/phase-02a-coarse-dem-sweep.json`
+- `analysis/auger/phase-02a-coarse-dem-results.md`
+
+Key finding: the current geometry conveys material, but delivery is already pulsatile in the low/medium cohesion screens and becomes strongly batch-like at high cohesion.
+
+The original parameter sweep now becomes **Phase 02A.2 geometry optimization** using this inexpensive screen.
+
+The higher-fidelity solver stage is renamed **Phase 02B — full 3D granular DEM**. It remains NOT RUN and should use the actual screw/housing mesh plus calibrated material properties before quantitative g/s or torque claims.
