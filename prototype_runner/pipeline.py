@@ -14,6 +14,8 @@ from typing import Any
 
 import yaml
 
+from prototype_runner.workspace import write_manifest
+
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -265,6 +267,7 @@ def execute(
     }
 
     write_evidence(summary, config)
+    write_manifest(config)
     return summary
 
 
