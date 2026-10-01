@@ -1,7 +1,7 @@
 {
-  "schema_version": 1,
-  "run_id": "WORKSPACE-BASELINE-20261001",
-  "created_at_utc": "2026-10-01T11:40:00+00:00",
+  "schema_version": 2,
+  "run_id": "WORKSPACE-LATEST-20261001-AUGER-P01",
+  "created_at_utc": "2026-10-01T13:40:00+00:00",
   "status": "PASS",
   "project": {
     "id": "rangoli-printer-prototype",
@@ -9,8 +9,8 @@
     "units": "mm"
   },
   "counts": {
-    "total": 4,
-    "pass": 4,
+    "total": 11,
+    "pass": 11,
     "fail": 0,
     "unknown": 0
   },
@@ -25,79 +25,86 @@
       "capacity_ml": 390.793182,
       "minimum_wall_mm": 2.0,
       "outlet_clear_diameter_mm": 12.0
+    },
+    "auger-meter-v1": {
+      "screw_valid": true,
+      "screw_solid_count": 1,
+      "housing_valid": true,
+      "housing_solid_count": 1,
+      "shaft_diameter_mm": 5.0,
+      "flight_outer_diameter_mm": 15.2,
+      "flight_pitch_mm": 10.0,
+      "flight_thickness_mm": 1.2,
+      "barrel_inner_diameter_mm": 16.0,
+      "radial_running_clearance_mm": 0.4,
+      "flight_turns": 6.0,
+      "housing_length_mm": 80.0,
+      "hopper_socket_radial_clearance_mm": 0.2,
+      "inlet_clear_diameter_mm": 12.4,
+      "hopper_outlet_clear_diameter_mm": 12.0,
+      "discharge_clear_diameter_mm": 10.0,
+      "bearing_pocket_diameter_mm": 16.15,
+      "bearing_nominal_od_mm": 16.0,
+      "rotation_sample_count": 12,
+      "max_sampled_interference_mm3": 0.0,
+      "rotation_clearance_pass": true,
+      "geometric_displacement_ml_per_rev": 1.618234
     }
   },
   "requirements": [
+    {"id":"DIG-GEO-001","title":"CAD result is a valid solid","component":"hopper-shell-v1","metric":"solid_valid","operator":"eq","target":true,"method":"deterministic_geometry","actual":true,"status":"PASS"},
+    {"id":"DIG-GEO-002","title":"CAD result contains exactly one solid","component":"hopper-shell-v1","metric":"solid_count","operator":"eq","target":1,"method":"deterministic_geometry","actual":1,"status":"PASS"},
+    {"id":"DIG-GEO-003","title":"Internal capacity is positive","component":"hopper-shell-v1","metric":"capacity_ml","operator":"gt","target":0,"unit":"ml","method":"analytic_geometry","actual":390.793182,"status":"PASS"},
+    {"id":"DIG-GEO-004","title":"Outlet has a positive clear diameter","component":"hopper-shell-v1","metric":"outlet_clear_diameter_mm","operator":"gt","target":0,"unit":"mm","method":"analytic_geometry","actual":12.0,"status":"PASS"},
+    {"id":"AUG-GEO-001","title":"Auger screw is one valid solid","component":"auger-meter-v1","metric":"screw_solid_count","operator":"eq","target":1,"method":"deterministic_geometry","actual":1,"status":"PASS"},
+    {"id":"AUG-GEO-002","title":"Auger housing is one valid solid","component":"auger-meter-v1","metric":"housing_solid_count","operator":"eq","target":1,"method":"deterministic_geometry","actual":1,"status":"PASS"},
+    {"id":"AUG-GEO-003","title":"Screw running clearance is in the printable design window","component":"auger-meter-v1","metric":"radial_running_clearance_mm","operator":"between","target":[0.3,0.5],"unit":"mm","method":"deterministic_geometry","actual":0.4,"status":"PASS"},
+    {"id":"AUG-INT-001","title":"Hopper socket nominal radial clearance is controlled","component":"auger-meter-v1","metric":"hopper_socket_radial_clearance_mm","operator":"between","target":[0.15,0.3],"unit":"mm","method":"interface_check","actual":0.2,"status":"PASS"},
+    {"id":"AUG-INT-002","title":"Auger inlet does not choke the existing hopper clear outlet","component":"auger-meter-v1","metric":"inlet_clear_diameter_mm","operator":"gte","target":12.0,"unit":"mm","method":"interface_check","actual":12.4,"status":"PASS"},
+    {"id":"AUG-KIN-001","title":"Screw completes sampled full rotation without housing interference","component":"auger-meter-v1","metric":"rotation_clearance_pass","operator":"eq","target":true,"method":"sampled_kinematic_simulation","actual":true,"status":"PASS"},
+    {"id":"AUG-GEO-004","title":"Downward discharge remains open","component":"auger-meter-v1","metric":"discharge_clear_diameter_mm","operator":"gte","target":8.0,"unit":"mm","method":"deterministic_geometry","actual":10.0,"status":"PASS"}
+  ],
+  "simulations": [
     {
-      "id": "DIG-GEO-001",
-      "title": "CAD result is a valid solid",
-      "component": "hopper-shell-v1",
-      "metric": "solid_valid",
-      "operator": "eq",
-      "target": true,
-      "method": "deterministic_geometry",
-      "actual": true,
-      "status": "PASS"
+      "id": "SIM-AUG-P01-ROT",
+      "component": "auger-meter-v1",
+      "phase": "Phase 01",
+      "name": "Sampled rotational clearance",
+      "type": "geometry_kinematics",
+      "status": "PASS",
+      "sample_count": 12,
+      "sample_step_deg": 30,
+      "max_interference_mm3": 0.0,
+      "scope": "Screw/housing collision only; no granular material physics."
     },
     {
-      "id": "DIG-GEO-002",
-      "title": "CAD result contains exactly one solid",
-      "component": "hopper-shell-v1",
-      "metric": "solid_count",
-      "operator": "eq",
-      "target": 1,
-      "method": "deterministic_geometry",
-      "actual": 1,
-      "status": "PASS"
-    },
-    {
-      "id": "DIG-GEO-003",
-      "title": "Internal capacity is positive",
-      "component": "hopper-shell-v1",
-      "metric": "capacity_ml",
-      "operator": "gt",
-      "target": 0,
-      "unit": "ml",
-      "method": "analytic_geometry",
-      "actual": 390.793182,
-      "status": "PASS"
-    },
-    {
-      "id": "DIG-GEO-004",
-      "title": "Outlet has a positive clear diameter",
-      "component": "hopper-shell-v1",
-      "metric": "outlet_clear_diameter_mm",
-      "operator": "gt",
-      "target": 0,
-      "unit": "mm",
-      "method": "analytic_geometry",
-      "actual": 12.0,
-      "status": "PASS"
+      "id": "SIM-AUG-P02-DEM",
+      "component": "auger-meter-v1",
+      "phase": "Phase 02",
+      "name": "Granular material DEM",
+      "type": "DEM",
+      "status": "NOT_RUN",
+      "scope": "Will evaluate flow, dose variation, torque, bridging, fill fraction and stop residual."
     }
   ],
   "assumptions": [
-    {
-      "id": "ASM-DIGITAL-001",
-      "statement": "Current automated evidence covers digital geometry only; no physical manufacturing or material behaviour is claimed.",
-      "confidence": "high",
-      "status": "accepted"
-    }
+    {"id":"ASM-DIGITAL-001","statement":"Current automated evidence covers digital geometry only; no physical manufacturing or material behaviour is claimed.","confidence":"high","status":"accepted"},
+    {"id":"ASM-AUGER-001","statement":"The 0.40 mm nominal radial screw clearance is a digital design target; printer/material dimensional compensation has not been calibrated.","confidence":"high","status":"open"},
+    {"id":"ASM-AUGER-002","statement":"Rangoli powder friction, cohesion, bulk density, particle-size distribution and humidity response are not yet measured; powder-flow predictions must remain uncalibrated.","confidence":"high","status":"open"},
+    {"id":"ASM-AUGER-003","statement":"625 bearing pocket dimensions are nominal CAD dimensions and require a later printer-specific fit coupon before hardware manufacture.","confidence":"high","status":"open"}
   ],
   "risks": [
-    {
-      "id": "RISK-VALIDATION-001",
-      "statement": "Future physical-behaviour claims can be wrong until their model parameters are calibrated or otherwise validated.",
-      "severity": "medium",
-      "status": "open",
-      "mitigation": "Keep those checks UNKNOWN or MODELLED until validation evidence exists."
-    }
+    {"id":"RISK-VALIDATION-001","statement":"Physical-behaviour claims remain provisional until model parameters are calibrated or otherwise validated.","severity":"medium","status":"open"},
+    {"id":"RISK-AUGER-001","statement":"Material may bridge above the hopper throat or refill the screw flights inconsistently.","severity":"high","status":"open"},
+    {"id":"RISK-AUGER-002","statement":"Residual material may continue to discharge after the screw stops.","severity":"high","status":"open"},
+    {"id":"RISK-AUGER-003","statement":"Real printed running clearance may differ from nominal CAD clearance enough to bind or leak.","severity":"medium","status":"open"},
+    {"id":"RISK-AUGER-004","statement":"Material ingress toward end bearings may increase drag over time.","severity":"medium","status":"open"}
   ],
   "component_errors": [],
   "provenance": {
     "executor": "chatgpt_tool_environment",
-    "source_ref": "main",
-    "source_commit": "6251b23fac3950d8863b5bb8e8e2415ec60f3a43",
-    "python": "3.11",
+    "source_ref": "feature/publish-latest-workbench",
+    "design_commit": "804bafdc6b87b6da9584121634739c2cbef48633",
     "cadquery": "2.8.0"
   }
 }
