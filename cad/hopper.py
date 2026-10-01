@@ -3,6 +3,7 @@ import math
 import cadquery as cq
 
 # Rangoli hopper shell V1 — all dimensions in millimetres.
+MODEL_ID = "hopper-shell-v1"
 TOP_OUTER_DIAMETER = 80.0
 STRAIGHT_HEIGHT = 70.0
 CONE_HEIGHT = 40.0
@@ -60,6 +61,36 @@ def build_hopper() -> cq.Workplane:
     return outer.cut(inner_outlet.union(inner_cone).union(inner_cylinder)).clean()
 
 
+def inspect_model() -> dict:
+    """Return deterministic metrics consumed by the prototype pipeline."""
+    hopper = build_hopper()
+    solid = hopper.val()
+    bbox = solid.BoundingBox()
+
+    inner_radius = TOP_OUTER_DIAMETER / 2.0 - WALL_THICKNESS
+    inner_outlet_radius = OUTLET_OUTER_DIAMETER / 2.0 - WALL_THICKNESS
+    straight_volume = math.pi * inner_radius**2 * STRAIGHT_HEIGHT
+    cone_volume = (
+        math.pi
+        * CONE_HEIGHT
+        * (inner_radius**2 + inner_radius * inner_outlet_radius + inner_outlet_radius**2)
+        / 3.0
+    )
+    outlet_volume = math.pi * inner_outlet_radius**2 * OUTLET_HEIGHT
+
+    return {
+        "solid_valid": bool(solid.isValid()),
+        "solid_count": len(hopper.solids().vals()),
+        "bbox_x_mm": round(float(bbox.xlen), 6),
+        "bbox_y_mm": round(float(bbox.ylen), 6),
+        "overall_height_mm": round(float(bbox.zlen), 6),
+        "material_volume_ml": round(float(solid.Volume()) / 1000.0, 6),
+        "capacity_ml": round((straight_volume + cone_volume + outlet_volume) / 1000.0, 6),
+        "minimum_wall_mm": WALL_THICKNESS,
+        "outlet_clear_diameter_mm": OUTLET_OUTER_DIAMETER - 2.0 * WALL_THICKNESS,
+    }
+
+
 def export_all() -> None:
     root = Path(__file__).resolve().parents[1]
     exports = root / "exports"
@@ -69,10 +100,7 @@ def export_all() -> None:
 
     hopper = build_hopper()
 
-    cq.exporters.export(
-        hopper,
-        str(exports / "rangoli_hopper_shell_v1.step"),
-    )
+    cq.exporters.export(hopper, str(exports / "rangoli_hopper_shell_v1.step"))
     cq.exporters.export(
         hopper,
         str(exports / "rangoli_hopper_shell_v1.stl"),
