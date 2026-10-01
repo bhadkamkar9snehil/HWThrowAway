@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "run_id": "WORKSPACE-BASELINE-20261001",
+  "created_at_utc": "2026-10-01T11:40:00+00:00",
+  "status": "PASS",
+  "project": {
+    "id": "rangoli-printer-prototype",
+    "name": "Rangoli Printer Prototype",
+    "units": "mm"
+  },
+  "counts": {
+    "total": 4,
+    "pass": 4,
+    "fail": 0,
+    "unknown": 0
+  },
+  "metrics": {
+    "hopper-shell-v1": {
+      "solid_valid": true,
+      "solid_count": 1,
+      "bbox_x_mm": 80.0,
+      "bbox_y_mm": 80.0,
+      "overall_height_mm": 125.0,
+      "material_volume_ml": 47.186722,
+      "capacity_ml": 390.793182,
+      "minimum_wall_mm": 2.0,
+      "outlet_clear_diameter_mm": 12.0
+    }
+  },
+  "requirements": [
+    {
+      "id": "DIG-GEO-001",
+      "title": "CAD result is a valid solid",
+      "component": "hopper-shell-v1",
+      "metric": "solid_valid",
+      "operator": "eq",
+      "target": true,
+      "method": "deterministic_geometry",
+      "actual": true,
+      "status": "PASS"
+    },
+    {
+      "id": "DIG-GEO-002",
+      "title": "CAD result contains exactly one solid",
+      "component": "hopper-shell-v1",
+      "metric": "solid_count",
+      "operator": "eq",
+      "target": 1,
+      "method": "deterministic_geometry",
+      "actual": 1,
+      "status": "PASS"
+    },
+    {
+      "id": "DIG-GEO-003",
+      "title": "Internal capacity is positive",
+      "component": "hopper-shell-v1",
+      "metric": "capacity_ml",
+      "operator": "gt",
+      "target": 0,
+      "unit": "ml",
+      "method": "analytic_geometry",
+      "actual": 390.793182,
+      "status": "PASS"
+    },
+    {
+      "id": "DIG-GEO-004",
+      "title": "Outlet has a positive clear diameter",
+      "component": "hopper-shell-v1",
+      "metric": "outlet_clear_diameter_mm",
+      "operator": "gt",
+      "target": 0,
+      "unit": "mm",
+      "method": "analytic_geometry",
+      "actual": 12.0,
+      "status": "PASS"
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "ASM-DIGITAL-001",
+      "statement": "Current automated evidence covers digital geometry only; no physical manufacturing or material behaviour is claimed.",
+      "confidence": "high",
+      "status": "accepted"
+    }
+  ],
+  "risks": [
+    {
+      "id": "RISK-VALIDATION-001",
+      "statement": "Future physical-behaviour claims can be wrong until their model parameters are calibrated or otherwise validated.",
+      "severity": "medium",
+      "status": "open",
+      "mitigation": "Keep those checks UNKNOWN or MODELLED until validation evidence exists."
+    }
+  ],
+  "component_errors": [],
+  "provenance": {
+    "executor": "chatgpt_tool_environment",
+    "source_ref": "main",
+    "source_commit": "6251b23fac3950d8863b5bb8e8e2415ec60f3a43",
+    "python": "3.11",
+    "cadquery": "2.8.0"
+  }
+}
