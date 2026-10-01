@@ -48,7 +48,7 @@ button,select{font:inherit;color:inherit}button{cursor:pointer}a{color:var(--acc
 .panel{overflow:auto;flex:1;padding:0 13px 14px}
 .section{padding:13px 0;border-bottom:1px solid var(--line)}.section:last-child{border-bottom:0}.section h3{font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin:0 0 9px}
 .summary{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.summary b{font-size:14px}.summary .note{margin-top:3px}
-.badge{font-size:10px;font-weight:750;border-radius:999px;padding:4px 7px;border:1px solid}.badge.pass{color:var(--pass);border-color:#9fbca6;background:#e5efe7}.badge.fail{color:var(--fail);border-color:#d1a49f;background:#f5e8e6}.badge.not_run,.badge.unknown{color:var(--warn);border-color:#d5c18a;background:#f5efdd}
+.badge{font-size:10px;font-weight:750;border-radius:999px;padding:4px 7px;border:1px solid}.badge.pass{color:var(--pass);border-color:#9fbca6;background:#e5efe7}.badge.fail{color:var(--fail);border-color:#d1a49f;background:#f5e8e6}.badge.not_run,.badge.unknown,.badge.modelled_uncalibrated{color:var(--warn);border-color:#d5c18a;background:#f5efdd}
 .counts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.count b{display:block;font-size:18px;line-height:1}.count span{display:block;margin-top:4px;font-size:10px;color:var(--muted)}
 .kv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;font-size:12px}.kv dt{color:var(--muted)}.kv dd{margin:0;font-weight:650;text-align:right}
 .req{padding:10px 0;border-bottom:1px solid var(--line)}.req:last-child{border-bottom:0}.reqTop{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}.reqTitle{font-size:12px;font-weight:650;line-height:1.35}.mono{font:500 10px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--muted)}.result{font-size:10px;font-weight:750}.result.pass{color:var(--pass)}.result.fail{color:var(--fail)}.note{font-size:11px;line-height:1.5;color:var(--muted)}
@@ -122,7 +122,7 @@ const FALLBACK_MODELS={"project":"Rangoli Printer Prototype","units":"mm","defau
 const FALLBACK_EVIDENCE={"run_id":"WORKSPACE-LATEST-20261001-AUGER-P01","status":"PASS","counts":{"total":11,"pass":11,"fail":0,"unknown":0},"metrics":{"hopper-shell-v1":{"overall_height_mm":125,"capacity_ml":390.793182,"minimum_wall_mm":2,"outlet_clear_diameter_mm":12},"auger-meter-v1":{"shaft_diameter_mm":5,"flight_outer_diameter_mm":15.2,"flight_pitch_mm":10,"barrel_inner_diameter_mm":16,"radial_running_clearance_mm":0.4,"flight_turns":6,"housing_length_mm":80,"hopper_socket_radial_clearance_mm":0.2,"inlet_clear_diameter_mm":12.4,"discharge_clear_diameter_mm":10,"rotation_sample_count":12,"max_sampled_interference_mm3":0,"rotation_clearance_pass":true,"geometric_displacement_ml_per_rev":1.618234}},"requirements":[],"simulations":[{"id":"SIM-AUG-P01-ROT","component":"auger-meter-v1","phase":"Phase 01","name":"Sampled rotational clearance","type":"geometry_kinematics","status":"PASS","sample_count":12,"sample_step_deg":30,"max_interference_mm3":0,"scope":"Screw/housing collision only; no granular material physics."},{"id":"SIM-AUG-P02-DEM","component":"auger-meter-v1","phase":"Phase 02","name":"Granular material DEM","type":"DEM","status":"NOT_RUN","scope":"Will evaluate flow, dose variation, torque, bridging, fill fraction and stop residual."}],"assumptions":[],"risks":[]};
 
 let MODELS=FALLBACK_MODELS,EVIDENCE=FALLBACK_EVIDENCE,selectedId="system-assembly-v1",activeTab="overview";
-let gl,program,canvas,wire=false,xray=false,rotateView=false,simulateScrew=false,screwAngle=0,lastTime=0;
+let gl,program,particleProgram,particleBuffer,canvas,wire=false,xray=false,rotateView=false,simulateScrew=false,screwAngle=0,lastTime=0;\nlet powderData=null,powderPlaying=false,powderClock=0;
 let yaw=-0.78,pitch=0.52,distance=245,target=[22,0,52],pointers=new Map(),pinchDistance=0;
 let sceneObjects=[];
 
@@ -224,11 +224,47 @@ function buildGeometry(){
 }
 function compile(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s)||"Shader error");return s}
 function makeProgram(){const vs="attribute vec3 aPos;attribute vec3 aNor;uniform mat4 uMVP;varying vec3 vN;void main(){vN=aNor;gl_Position=uMVP*vec4(aPos,1.0);}";const fs="precision mediump float;varying vec3 vN;uniform vec3 uColor;uniform float uAlpha;uniform float uWire;void main(){float l=uWire>0.5?1.0:(0.38+0.62*max(dot(normalize(vN),normalize(vec3(.4,-.55,.73))),0.0));gl_FragColor=vec4(uColor*l,uAlpha);}";const p=gl.createProgram();gl.attachShader(p,compile(gl.VERTEX_SHADER,vs));gl.attachShader(p,compile(gl.FRAGMENT_SHADER,fs));gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(p)||"Link error");return p}
-function buffer(data){const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.STATIC_DRAW);return b}
+function makeParticleProgram(){
+  const vs="attribute vec3 aPos;uniform mat4 uMVP;uniform float uSize;void main(){gl_Position=uMVP*vec4(aPos,1.0);gl_PointSize=uSize;}";
+  const fs="precision mediump float;void main(){vec2 q=gl_PointCoord-vec2(.5);if(dot(q,q)>.25)discard;gl_FragColor=vec4(.84,.55,.12,.96);}";
+  const p=gl.createProgram();gl.attachShader(p,compile(gl.VERTEX_SHADER,vs));gl.attachShader(p,compile(gl.FRAGMENT_SHADER,fs));gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(p)||"Particle shader link error");return p
+}
+function currentPowderFrame(){
+  if(!powderData?.frames?.length)return null;
+  let best=powderData.frames[0];
+  for(const frame of powderData.frames){if(frame.t_s<=powderClock)best=frame;else break}
+  return best
+}
+function updatePowder(dt){
+  if(!powderPlaying||!powderData?.frames?.length)return;
+  const end=powderData.frames[powderData.frames.length-1].t_s||10;
+  powderClock+=dt;
+  if(powderClock>end)powderClock=0;
+  const rpm=powderData.scenario?.rpm||60;
+  if(powderClock<1)screwAngle=0;
+  else if(powderClock<8)screwAngle=2*Math.PI*(rpm/60)*(powderClock-1);
+  else screwAngle=2*Math.PI*(rpm/60)*7;
+}
+function drawPowder(pv){
+  if(!powderPlaying||!powderData)return;
+  const frame=currentPowderFrame();if(!frame)return;
+  const pts=frame.particles_xz_mm||[],flat=new Float32Array(pts.length*3);
+  for(let i=0;i<pts.length;i++){flat[i*3]=pts[i][0];flat[i*3+1]=0;flat[i*3+2]=pts[i][1]}
+  gl.useProgram(particleProgram);gl.bindBuffer(gl.ARRAY_BUFFER,particleBuffer);gl.bufferData(gl.ARRAY_BUFFER,flat,gl.DYNAMIC_DRAW);gl.enableVertexAttribArray(particleProgram.pos);gl.vertexAttribPointer(particleProgram.pos,3,gl.FLOAT,false,0,0);gl.uniformMatrix4fv(particleProgram.mvp,false,pv);gl.uniform1f(particleProgram.size,Math.min(devicePixelRatio||1,2)*7.0);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.drawArrays(gl.POINTS,0,pts.length);gl.depthMask(true);gl.disable(gl.BLEND);gl.useProgram(program);
+}
+async function togglePowder(){
+  if(!powderData)powderData=await loadJSON("./simulation/auger/phase-02a-medium-60rpm.json",null);
+  if(!powderData){statusText.textContent="Powder animation asset unavailable";return}
+  powderPlaying=!powderPlaying;simulateScrew=false;powderClock=0;
+  if(powderPlaying){xray=true;$("xrayBtn").classList.add("active");$("xrayBtn").setAttribute("aria-pressed","true");statusText.textContent="Phase 02A · 60 RPM · medium-cohesion screening animation"}
+  else statusText.textContent="Phase 02A screening loaded · full 3D DEM not run";
+  renderInspector();
+}
+\nfunction buffer(data){const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.STATIC_DRAW);return b}
 function makeObject(name,b,color,alpha,rotating){return{name,color,alpha,rotating,count:b.p.length/3,edgeCount:b.e.length/3,pos:buffer(b.p),nor:buffer(b.n),edge:buffer(b.e),edgeNor:buffer(new Array(b.e.length).fill(0))}}
 function initGL(){
   canvas=$("canvas");gl=canvas.getContext("webgl",{antialias:true,alpha:true})||canvas.getContext("experimental-webgl");if(!gl)throw new Error("WebGL is unavailable.");
-  program=makeProgram();gl.useProgram(program);program.pos=gl.getAttribLocation(program,"aPos");program.nor=gl.getAttribLocation(program,"aNor");program.mvp=gl.getUniformLocation(program,"uMVP");program.color=gl.getUniformLocation(program,"uColor");program.alpha=gl.getUniformLocation(program,"uAlpha");program.wire=gl.getUniformLocation(program,"uWire");gl.enable(gl.DEPTH_TEST);gl.clearColor(0,0,0,0);
+  program=makeProgram();gl.useProgram(program);program.pos=gl.getAttribLocation(program,"aPos");program.nor=gl.getAttribLocation(program,"aNor");program.mvp=gl.getUniformLocation(program,"uMVP");program.color=gl.getUniformLocation(program,"uColor");program.alpha=gl.getUniformLocation(program,"uAlpha");program.wire=gl.getUniformLocation(program,"uWire");particleProgram=makeParticleProgram();particleProgram.pos=gl.getAttribLocation(particleProgram,"aPos");particleProgram.mvp=gl.getUniformLocation(particleProgram,"uMVP");particleProgram.size=gl.getUniformLocation(particleProgram,"uSize");particleBuffer=gl.createBuffer();gl.useProgram(program);gl.enable(gl.DEPTH_TEST);gl.clearColor(0,0,0,0);
 }
 function bind(buf,loc){gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,3,gl.FLOAT,false,0,0)}
 function visible(name){const v=getPart(selectedId)?.view||"system";if(v==="system")return true;if(v==="hopper")return name==="hopper";if(v==="auger")return name!=="hopper";if(v==="screw")return name==="screw";if(v==="housing")return name==="housing"||name==="bearings";return true}
@@ -256,7 +292,7 @@ function renderTree(){
   MODELS.parts.forEach((p,i)=>{const b=document.createElement("button");b.type="button";b.className="treeRow"+(p.id===selectedId?" selected":"");b.innerHTML='<span class="icon"></span><span><div class="treeName">'+esc(p.name)+'</div><div class="treeMeta">'+esc(p.type)+'</div></span>';b.onclick=()=>select(p.id);tree.appendChild(b);const o=document.createElement("option");o.value=p.id;o.textContent=p.name;mobileSelect.appendChild(o)});
   mobileSelect.value=selectedId;
 }
-function select(id){selectedId=id;simulateScrew=false;screwAngle=0;renderTree();renderInspector();const p=getPart(id);viewName.textContent=p?.name||id;viewMeta.textContent=p?.view==="system"?"Hopper + metering auger":p?.view==="auger"?"Auger housing + screw":p?.type||"component";phaseBadge.style.display=(p?.view==="hopper")?"none":"block";fit("iso")}
+function select(id){selectedId=id;simulateScrew=false;powderPlaying=false;powderClock=0;screwAngle=0;renderTree();renderInspector();const p=getPart(id);viewName.textContent=p?.name||id;viewMeta.textContent=p?.view==="system"?"Hopper + metering auger":p?.view==="auger"?"Auger housing + screw":p?.type||"component";const hasPowder=(EVIDENCE.simulations||[]).some(x=>x.id==="SIM-AUG-P02A-COARSE-DEM");phaseBadge.style.display="block";phaseBadge.textContent=hasPowder?"P02A POWDER MODELLED":"P01 KINEMATICS PASS";fit("iso")}
 function reqs(){const c=evidenceComponent(selectedId);return c?(EVIDENCE.requirements||[]).filter(r=>r.component===c):(EVIDENCE.requirements||[])}
 function overviewHTML(){
   const rs=reqs(),pass=rs.filter(r=>r.status==="PASS").length,fail=rs.filter(r=>r.status==="FAIL").length,unk=rs.filter(r=>r.status==="UNKNOWN").length;
@@ -268,14 +304,15 @@ function overviewHTML(){
 }
 function checksHTML(){const r=reqs();return '<section class="section"><h3>Executable checks</h3>'+(r.length?r.map(x=>'<div class="req"><div class="reqTop"><div><div class="reqTitle">'+esc(x.title)+'</div><div class="mono">'+esc(x.id)+'</div></div><div class="result '+statusClass(x.status)+'">'+esc(x.status)+'</div></div><div class="note" style="margin-top:5px">Actual '+esc(Array.isArray(x.actual)?x.actual.join("–"):x.actual)+' · '+esc(x.operator)+' '+esc(Array.isArray(x.target)?x.target.join("–"):x.target)+' '+esc(x.unit||"")+'</div></div>').join(""):'<div class="note">No checks for this selection.</div>')+'</section>'}
 function simulationHTML(){
-  const v=getPart(selectedId)?.view;if(v==="hopper")return '<section class="section"><h3>Simulation</h3><div class="note">No hopper-specific simulation has been run yet. Hopper/throat granular behaviour enters Phase 02 DEM with the auger.</div></section>';
-  return '<section class="section"><h3>Simulation status</h3>'+(EVIDENCE.simulations||[]).map(s=>'<div class="sim"><div class="simHead"><div><div class="simName">'+esc(s.phase)+' · '+esc(s.name)+'</div><div class="mono">'+esc(s.id)+'</div></div><span class="badge '+statusClass(s.status)+'">'+esc(s.status)+'</span></div><div class="simMeta">'+esc(s.scope)+'</div>'+(s.id==="SIM-AUG-P01-ROT"?'<button id="simBtn" class="action'+(simulateScrew?" active":"")+'" style="margin-top:8px">'+(simulateScrew?"Stop rotation visualization":"Animate rotation check")+'</button>':"")+'</div>').join("")+'</section>';
+  const v=getPart(selectedId)?.view;
+  const sims=(EVIDENCE.simulations||[]).filter(s=>v!=="hopper"||s.id!=="SIM-AUG-P01-ROT");
+  return '<section class="section"><h3>Simulation status</h3>'+sims.map(s=>'<div class="sim"><div class="simHead"><div><div class="simName">'+esc(s.phase)+' · '+esc(s.name)+'</div><div class="mono">'+esc(s.id)+'</div></div><span class="badge '+statusClass(s.status)+'">'+esc(s.status)+'</span></div><div class="simMeta">'+esc(s.scope)+'</div>'+(s.id==="SIM-AUG-P01-ROT"?'<button id="simBtn" class="action'+(simulateScrew?" active":"")+'" style="margin-top:8px">'+(simulateScrew?"Stop rotation visualization":"Animate rotation check")+'</button>':s.id==="SIM-AUG-P02A-COARSE-DEM"?'<button id="powderBtn" class="action'+(powderPlaying?" active":"")+'" style="margin-top:8px">'+(powderPlaying?"Stop powder animation":"Play powder-flow simulation")+'</button>':"")+'</div>').join("")+'</section><section class="section"><h3>Material-screening result</h3><dl class="kv"><dt>Baseline</dt><dd>60 RPM</dd><dt>Cohesion / weight</dt><dd>0.8</dd><dt>Driven discharge</dt><dd>215 / 220</dd><dt>Delivery CV</dt><dd>0.581</dd><dt>Strong-cohesion CV</dt><dd>1.583</dd></dl><div class="note" style="margin-top:9px">Screening only: 2D coarse grains, uncalibrated material properties. Do not interpret as g/s.</div></section>';
 }
 function unknownsHTML(){return '<section class="section"><h3>Assumptions</h3>'+(EVIDENCE.assumptions||[]).map(a=>'<div class="unknown">'+esc(a.statement)+'<small>'+esc(a.id)+' · '+esc(a.status)+'</small></div>').join("")+'</section><section class="section"><h3>Open risks</h3>'+(EVIDENCE.risks||[]).map(r=>'<div class="unknown">'+esc(r.statement)+'<small>'+esc(r.id)+' · severity '+esc(r.severity)+'</small></div>').join("")+'</section>'}
 function renderInspector(){
   const p=getPart(selectedId);inspectName.textContent=p?.name||selectedId;inspectSub.textContent='Run '+(EVIDENCE.run_id||"current")+' · '+(EVIDENCE.status||"UNKNOWN");
   panel.innerHTML=activeTab==="overview"?overviewHTML():activeTab==="checks"?checksHTML():activeTab==="simulation"?simulationHTML():unknownsHTML();
-  const sb=$("simBtn");if(sb)sb.onclick=()=>{simulateScrew=!simulateScrew;renderInspector()};
+  const sb=$("simBtn");if(sb)sb.onclick=()=>{simulateScrew=!simulateScrew;powderPlaying=false;renderInspector()};const pb=$("powderBtn");if(pb)pb.onclick=togglePowder;
 }
 function setupUI(){
   document.querySelectorAll("[data-camera]").forEach(b=>b.onclick=()=>setCamera(b.dataset.camera));
@@ -291,7 +328,7 @@ async function loadJSON(path,fallback){try{const r=await fetch(path+"?v="+Date.n
 async function boot(){
   try{
     [MODELS,EVIDENCE]=await Promise.all([loadJSON("./models.json",FALLBACK_MODELS),loadJSON("./evidence/summary.json",FALLBACK_EVIDENCE)]);
-    selectedId=MODELS.default||MODELS.parts[0]?.id||"system-assembly-v1";initGL();buildGeometry();renderTree();setupUI();select(selectedId);statusText.textContent='Latest design synced · '+(EVIDENCE.counts?.pass||0)+'/'+(EVIDENCE.counts?.total||0)+' checks pass · Phase 02 DEM not run';requestAnimationFrame(draw);
+    selectedId=MODELS.default||MODELS.parts[0]?.id||"system-assembly-v1";initGL();buildGeometry();renderTree();setupUI();select(selectedId);statusText.textContent='Latest design synced · '+(EVIDENCE.counts?.pass||0)+'/'+(EVIDENCE.counts?.total||0)+' checks pass · Phase 02A powder screening available · full 3D DEM not run';requestAnimationFrame(draw);
   }catch(e){console.error(e);statusText.textContent="Viewer error: "+(e.message||e);viewMeta.textContent="The engineering evidence remains available in the repository.";panel.innerHTML='<section class="section"><h3>Viewer error</h3><div class="note">'+esc(e.message||e)+'</div></section>'}
 }
 boot();
