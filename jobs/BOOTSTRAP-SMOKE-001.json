@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "job_id": "BOOTSTRAP-SMOKE-001",
+  "status": "queued",
+  "intent": "Regenerate the current hopper and verify the baseline digital prototype pipeline end to end.",
+  "requested_by": "chatgpt",
+  "checks": ["cad_export", "component_inspection", "requirements", "evidence_report"]
+}
