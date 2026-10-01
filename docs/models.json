@@ -11,16 +11,6 @@
       "visible": true,
       "position": [0, 0, 0],
       "rotationDeg": [0, 0, 0]
-    },
-    {
-      "id": "auger-assembly-v1",
-      "name": "Auger meter V1 assembly",
-      "stl": "https://raw.githubusercontent.com/bhadkamkar9snehil/HWThrowAway/main/exports/rangoli_auger_assembly_v1.stl",
-      "step": "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/exports/rangoli_auger_assembly_v1.step",
-      "source": "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/cad/auger.py",
-      "visible": true,
-      "position": [0, 0, 0],
-      "rotationDeg": [0, 0, 0]
     }
   ]
 }
