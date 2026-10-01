@@ -33,3 +33,63 @@ requirements:
     target: 0
     unit: mm
     method: analytic_geometry
+
+  - id: AUG-GEO-001
+    title: Auger screw is one valid solid
+    component: auger-meter-v1
+    metric: screw_solid_count
+    operator: eq
+    target: 1
+    method: deterministic_geometry
+
+  - id: AUG-GEO-002
+    title: Auger housing is one valid solid
+    component: auger-meter-v1
+    metric: housing_solid_count
+    operator: eq
+    target: 1
+    method: deterministic_geometry
+
+  - id: AUG-GEO-003
+    title: Screw running clearance is in the printable design window
+    component: auger-meter-v1
+    metric: radial_running_clearance_mm
+    operator: between
+    target: [0.30, 0.50]
+    unit: mm
+    method: deterministic_geometry
+
+  - id: AUG-INT-001
+    title: Hopper socket nominal radial clearance is controlled
+    component: auger-meter-v1
+    metric: hopper_socket_radial_clearance_mm
+    operator: between
+    target: [0.15, 0.30]
+    unit: mm
+    method: interface_check
+
+  - id: AUG-INT-002
+    title: Auger inlet does not choke the existing hopper clear outlet
+    component: auger-meter-v1
+    metric: inlet_clear_diameter_mm
+    operator: gte
+    target: 12.0
+    unit: mm
+    method: interface_check
+
+  - id: AUG-KIN-001
+    title: Screw completes sampled full rotation without housing interference
+    component: auger-meter-v1
+    metric: rotation_clearance_pass
+    operator: eq
+    target: true
+    method: sampled_kinematic_simulation
+
+  - id: AUG-GEO-004
+    title: Downward discharge remains open
+    component: auger-meter-v1
+    metric: discharge_clear_diameter_mm
+    operator: gte
+    target: 8.0
+    unit: mm
+    method: deterministic_geometry
