@@ -29,6 +29,12 @@ $PythonW = Join-Path $Venv "Scripts\pythonw.exe"
 git -C $Repo config user.name "Prototype Engineering Runner"
 git -C $Repo config user.email "prototype-runner@localhost"
 
+# Validate that the managed clone can return evidence before installing a silent task.
+git -C $Repo push --dry-run origin main
+if ($LASTEXITCODE -ne 0) {
+    throw "GitHub push authentication failed. Complete Git Credential Manager authentication and rerun this installer."
+}
+
 $Runner = Join-Path $Repo "prototype_runner\daemon.py"
 $Action = New-ScheduledTaskAction -Execute $PythonW -Argument ('"{0}" --repo-root "{1}" --interval 30' -f $Runner, $Repo)
 $Trigger = New-ScheduledTaskTrigger -AtLogOn
@@ -40,4 +46,4 @@ Start-ScheduledTask -TaskName $TaskName
 Write-Host "Prototype runner installed and started."
 Write-Host "Runner repo: $Repo"
 Write-Host "Task: $TaskName"
-Write-Host "Important: git push from this clone must authenticate with your existing GitHub credentials."
+Write-Host "GitHub push authentication: verified"
