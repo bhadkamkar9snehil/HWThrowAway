@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "simulation": "sampled_rotational_clearance",
+  "component": "auger-meter-v1",
+  "sample_step_deg": 30,
+  "sample_count": 12,
+  "max_interference_mm3": 0,
+  "status": "PASS",
+  "samples": [
+    {"angle_deg": 0, "interference_mm3": 0},
+    {"angle_deg": 30, "interference_mm3": 0},
+    {"angle_deg": 60, "interference_mm3": 0},
+    {"angle_deg": 90, "interference_mm3": 0},
+    {"angle_deg": 120, "interference_mm3": 0},
+    {"angle_deg": 150, "interference_mm3": 0},
+    {"angle_deg": 180, "interference_mm3": 0},
+    {"angle_deg": 210, "interference_mm3": 0},
+    {"angle_deg": 240, "interference_mm3": 0},
+    {"angle_deg": 270, "interference_mm3": 0},
+    {"angle_deg": 300, "interference_mm3": 0},
+    {"angle_deg": 330, "interference_mm3": 0}
+  ],
+  "scope": "geometry/kinematics only; no powder physics"
+}
