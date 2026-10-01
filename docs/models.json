@@ -1,16 +1,85 @@
 {
   "project": "Rangoli Printer Prototype",
   "units": "mm",
+  "default": "system-assembly-v1",
+  "geometry_version": 1,
   "parts": [
+    {
+      "id": "system-assembly-v1",
+      "name": "Rangoli dispenser assembly",
+      "type": "assembly",
+      "components": ["hopper-shell-v1", "auger-meter-v1"],
+      "visible": true,
+      "view": "system"
+    },
     {
       "id": "hopper-shell-v1",
       "name": "Hopper shell V1",
-      "stl": "https://raw.githubusercontent.com/bhadkamkar9snehil/HWThrowAway/main/exports/rangoli_hopper_shell_v1.stl",
-      "step": "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/exports/rangoli_hopper_shell_v1.step",
+      "type": "component",
       "source": "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/cad/hopper.py",
       "visible": true,
-      "position": [0, 0, 0],
-      "rotationDeg": [0, 0, 0]
+      "view": "hopper",
+      "transform": {"translate": [22.0, 0.0, 10.0]},
+      "parameters": {
+        "top_outer_diameter_mm": 80.0,
+        "straight_height_mm": 70.0,
+        "cone_height_mm": 40.0,
+        "outlet_outer_diameter_mm": 16.0,
+        "outlet_height_mm": 15.0,
+        "wall_thickness_mm": 2.0
+      }
+    },
+    {
+      "id": "auger-meter-v1",
+      "name": "Auger meter V1",
+      "type": "assembly",
+      "source": "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/cad/auger.py",
+      "simulation": "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/simulation/auger/results/phase-01-rotation-clearance.json",
+      "visible": true,
+      "view": "auger",
+      "parameters": {
+        "shaft_diameter_mm": 5.0,
+        "shaft_hole_diameter_mm": 5.7,
+        "flight_outer_diameter_mm": 15.2,
+        "flight_pitch_mm": 10.0,
+        "flight_thickness_mm": 1.2,
+        "flight_start_x_mm": 10.0,
+        "flight_length_mm": 60.0,
+        "barrel_inner_diameter_mm": 16.0,
+        "barrel_outer_diameter_mm": 22.0,
+        "housing_length_mm": 80.0,
+        "inlet_center_x_mm": 22.0,
+        "inlet_clear_diameter_mm": 12.4,
+        "hopper_socket_inner_diameter_mm": 16.4,
+        "hopper_socket_outer_diameter_mm": 22.0,
+        "hopper_socket_height_mm": 10.0,
+        "discharge_center_x_mm": 64.0,
+        "discharge_clear_diameter_mm": 10.0,
+        "discharge_outer_diameter_mm": 14.0,
+        "discharge_length_mm": 15.0,
+        "bearing_pocket_diameter_mm": 16.15,
+        "bearing_pocket_depth_mm": 5.2,
+        "motor_side_shaft_extension_mm": 15.0,
+        "outboard_shaft_extension_mm": 5.0
+      }
+    },
+    {
+      "id": "auger-screw-v1",
+      "name": "Auger screw V1",
+      "type": "subcomponent",
+      "parent": "auger-meter-v1",
+      "source": "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/cad/auger.py",
+      "visible": true,
+      "view": "screw"
+    },
+    {
+      "id": "auger-housing-v1",
+      "name": "Auger housing V1",
+      "type": "subcomponent",
+      "parent": "auger-meter-v1",
+      "source": "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/cad/auger.py",
+      "visible": true,
+      "view": "housing"
     }
   ]
 }

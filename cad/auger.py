@@ -255,6 +255,64 @@ def inspect_model() -> dict:
     }
 
 
+
+def viewer_spec() -> list[dict]:
+    """Return browser-workbench entries for the auger assembly and subcomponents."""
+    parameters = {
+        "shaft_diameter_mm": SHAFT_DIAMETER_MM,
+        "shaft_hole_diameter_mm": SHAFT_HOLE_DIAMETER_MM,
+        "flight_outer_diameter_mm": FLIGHT_OUTER_DIAMETER_MM,
+        "flight_pitch_mm": FLIGHT_PITCH_MM,
+        "flight_thickness_mm": FLIGHT_THICKNESS_MM,
+        "flight_start_x_mm": FLIGHT_START_X_MM,
+        "flight_length_mm": FLIGHT_LENGTH_MM,
+        "barrel_inner_diameter_mm": BARREL_INNER_DIAMETER_MM,
+        "barrel_outer_diameter_mm": BARREL_OUTER_DIAMETER_MM,
+        "housing_length_mm": HOUSING_LENGTH_MM,
+        "inlet_center_x_mm": INLET_CENTER_X_MM,
+        "inlet_clear_diameter_mm": INLET_CLEAR_DIAMETER_MM,
+        "hopper_socket_inner_diameter_mm": HOPPER_SOCKET_INNER_DIAMETER_MM,
+        "hopper_socket_outer_diameter_mm": HOPPER_SOCKET_OUTER_DIAMETER_MM,
+        "hopper_socket_height_mm": HOPPER_SOCKET_HEIGHT_MM,
+        "discharge_center_x_mm": DISCHARGE_CENTER_X_MM,
+        "discharge_clear_diameter_mm": DISCHARGE_CLEAR_DIAMETER_MM,
+        "discharge_outer_diameter_mm": DISCHARGE_OUTER_DIAMETER_MM,
+        "discharge_length_mm": DISCHARGE_LENGTH_MM,
+        "bearing_pocket_diameter_mm": BEARING_POCKET_DIAMETER_MM,
+        "bearing_pocket_depth_mm": BEARING_POCKET_DEPTH_MM,
+        "motor_side_shaft_extension_mm": MOTOR_SIDE_SHAFT_EXTENSION_MM,
+        "outboard_shaft_extension_mm": OUTBOARD_SHAFT_EXTENSION_MM,
+    }
+    source = "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/cad/auger.py"
+    return [
+        {
+            "id": MODEL_ID,
+            "name": "Auger meter V1",
+            "type": "assembly",
+            "view": "auger",
+            "source": source,
+            "simulation": "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/simulation/auger/results/phase-01-rotation-clearance.json",
+            "parameters": parameters,
+        },
+        {
+            "id": "auger-screw-v1",
+            "name": "Auger screw V1",
+            "type": "subcomponent",
+            "parent": MODEL_ID,
+            "view": "screw",
+            "source": source,
+        },
+        {
+            "id": "auger-housing-v1",
+            "name": "Auger housing V1",
+            "type": "subcomponent",
+            "parent": MODEL_ID,
+            "view": "housing",
+            "source": source,
+        },
+    ]
+
+
 def export_all() -> None:
     root = Path(__file__).resolve().parents[1]
     exports = root / "exports"

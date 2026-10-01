@@ -91,3 +91,8 @@ For setting up another GitHub repository with the same browser-based interactive
 ## Design rule
 
 Keep the model parametric. Dimensions and mating/interface decisions belong in source code; STL is an output, not the editable source.
+
+
+## Workbench stays in sync
+
+The workbench reads the latest committed `docs/models.json` and `docs/evidence/summary.json` each time it opens. The prototype pipeline regenerates the model manifest from the CAD modules' `viewer_spec()` functions, so the site is part of the normal design/evidence loop rather than a manually frozen snapshot.

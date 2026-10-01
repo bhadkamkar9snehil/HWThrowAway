@@ -73,3 +73,14 @@ Normal prompts are simply design intents, for example:
 - "Run the current prototype checks and show me what is still unproven."
 
 ChatGPT decides which deterministic checks or simulations are warranted, executes them immediately, and reports the evidence.
+
+
+## Workbench publishing
+
+The persistent GitHub Pages workbench is part of the prototype state, not a separate manually maintained demo.
+
+- Each pipeline run refreshes `docs/evidence/summary.json`.
+- The pipeline also refreshes `docs/models.json` from each component's `viewer_spec()`.
+- `docs/index.html` loads both files from the same GitHub Pages origin on every visit, with embedded fallbacks only for resilience.
+- Geometry displayed for the current hopper/auger family is generated from the committed parameters in `docs/models.json`.
+- Therefore a dimension or component change is not complete until the pipeline has been run and the workbench data has been committed.
