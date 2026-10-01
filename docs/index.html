@@ -162,7 +162,7 @@ function applyMaterial(){
   if(!current)return;
   current.material.wireframe=wire;
   current.material.transparent=xray;
-  current.material.opacity=xray?.38:1;
+  current.material.opacity=xray ? .38 : 1;
   current.material.depthWrite=!xray;
 }
 function fit(view='iso'){
