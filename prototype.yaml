@@ -8,6 +8,12 @@ components:
     module: cad.hopper
     exporter: export_all
     inspector: inspect_model
+
+  - id: auger-meter-v1
+    module: cad.auger
+    exporter: export_all
+    inspector: inspect_model
+
 pipeline:
   evidence_root: evidence
   publish_report_to: docs/evidence
