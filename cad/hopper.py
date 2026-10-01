@@ -91,6 +91,27 @@ def inspect_model() -> dict:
     }
 
 
+
+def viewer_spec() -> dict:
+    """Return the browser-workbench representation of this component."""
+    return {
+        "id": MODEL_ID,
+        "name": "Hopper shell V1",
+        "type": "component",
+        "view": "hopper",
+        "source": "https://github.com/bhadkamkar9snehil/HWThrowAway/blob/main/cad/hopper.py",
+        "transform": {"translate": [22.0, 0.0, 10.0]},
+        "parameters": {
+            "top_outer_diameter_mm": TOP_OUTER_DIAMETER,
+            "straight_height_mm": STRAIGHT_HEIGHT,
+            "cone_height_mm": CONE_HEIGHT,
+            "outlet_outer_diameter_mm": OUTLET_OUTER_DIAMETER,
+            "outlet_height_mm": OUTLET_HEIGHT,
+            "wall_thickness_mm": WALL_THICKNESS,
+        },
+    }
+
+
 def export_all() -> None:
     root = Path(__file__).resolve().parents[1]
     exports = root / "exports"
