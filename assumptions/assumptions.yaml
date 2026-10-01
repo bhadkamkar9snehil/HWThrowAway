@@ -4,3 +4,18 @@ assumptions:
     statement: Current automated evidence covers digital geometry only; no physical manufacturing or material behaviour is claimed.
     confidence: high
     status: accepted
+
+  - id: ASM-AUGER-001
+    statement: The 0.40 mm nominal radial screw clearance is a digital design target; printer/material dimensional compensation has not been calibrated.
+    confidence: high
+    status: open
+
+  - id: ASM-AUGER-002
+    statement: Rangoli powder friction, cohesion, bulk density, particle-size distribution and humidity response are not yet measured; powder-flow predictions must remain uncalibrated.
+    confidence: high
+    status: open
+
+  - id: ASM-AUGER-003
+    statement: 625 bearing pocket dimensions are nominal CAD dimensions and require a later printer-specific fit coupon before hardware manufacture.
+    confidence: high
+    status: open

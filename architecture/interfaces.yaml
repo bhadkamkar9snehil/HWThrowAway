@@ -16,3 +16,48 @@ interfaces:
     parameters:
       nominal_outer_diameter_mm: 16.0
       nominal_clear_diameter_mm: 12.0
+
+  - id: IF-HOPPER-AUGER
+    component: auger-meter-v1
+    mates_with: hopper-shell-v1
+    name: Hopper outlet to auger inlet socket
+    type: mechanical_material
+    status: defined
+    parameters:
+      hopper_outside_diameter_mm: 16.0
+      hopper_clear_diameter_mm: 12.0
+      auger_socket_inside_diameter_mm: 16.4
+      auger_inlet_clear_diameter_mm: 12.4
+      nominal_radial_clearance_mm: 0.2
+
+  - id: IF-AUGER-DRIVE
+    component: auger-meter-v1
+    name: Auger drive shaft
+    type: mechanical
+    status: defined
+    parameters:
+      shaft_diameter_mm: 5.0
+      suggested_coupler: 5_to_5_mm
+      motor: TBD
+
+  - id: IF-AUGER-BEARINGS
+    component: auger-meter-v1
+    name: Auger shaft bearing envelope
+    type: mechanical
+    status: defined
+    parameters:
+      bearing_family: "625"
+      nominal_id_mm: 5.0
+      nominal_od_mm: 16.0
+      nominal_width_mm: 5.0
+      pocket_diameter_mm: 16.15
+      pocket_depth_mm: 5.2
+
+  - id: IF-AUGER-DISCHARGE
+    component: auger-meter-v1
+    name: Powder discharge nozzle interface
+    type: mechanical_material
+    status: defined
+    parameters:
+      nominal_outer_diameter_mm: 14.0
+      nominal_clear_diameter_mm: 10.0
