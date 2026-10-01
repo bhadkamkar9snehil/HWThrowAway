@@ -207,6 +207,68 @@ def write_evidence(summary: dict[str, Any], config: dict[str, Any]) -> None:
     (publish_dir / "index.html").write_text(report_html, encoding="utf-8")
 
 
+
+def load_simulation_results() -> list[dict[str, Any]]:
+    """Collect committed simulation evidence without claiming unrun phases."""
+    simulations: list[dict[str, Any]] = []
+    for path in sorted((ROOT / "simulation").glob("**/results/*.json")):
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+
+        simulation_name = str(raw.get("simulation", path.stem))
+        item: dict[str, Any] = {
+            "id": path.stem,
+            "component": raw.get("component"),
+            "name": simulation_name.replace("_", " ").title(),
+            "type": "geometry_kinematics"
+            if "rotation" in simulation_name or "clearance" in simulation_name
+            else "simulation",
+            "status": raw.get("status", "UNKNOWN"),
+            "scope": raw.get("scope", ""),
+            "source": str(path.relative_to(ROOT)).replace("\\", "/"),
+        }
+        for key in (
+            "sample_count",
+            "sample_step_deg",
+            "max_interference_mm3",
+        ):
+            if key in raw:
+                item[key] = raw[key]
+
+        if raw.get("component") == "auger-meter-v1":
+            item["id"] = "SIM-AUG-P01-ROT"
+            item["phase"] = "Phase 01"
+            item["name"] = "Sampled rotational clearance"
+
+        simulations.append(item)
+
+    has_auger_dem = any(
+        item.get("component") == "auger-meter-v1"
+        and str(item.get("type", "")).upper() == "DEM"
+        for item in simulations
+    )
+    if (ROOT / "analysis" / "auger" / "phase-02-dem-plan.md").exists() and not has_auger_dem:
+        simulations.append(
+            {
+                "id": "SIM-AUG-P02-DEM",
+                "component": "auger-meter-v1",
+                "phase": "Phase 02",
+                "name": "Granular material DEM",
+                "type": "DEM",
+                "status": "NOT_RUN",
+                "scope": (
+                    "Will evaluate flow, dose variation, torque, bridging, "
+                    "fill fraction and stop residual."
+                ),
+                "source": "analysis/auger/phase-02-dem-plan.md",
+            }
+        )
+
+    return simulations
+
+
 def execute(
     run_id: str | None = None,
     source_ref: str | None = None,
@@ -246,7 +308,7 @@ def execute(
     }
 
     summary = {
-        "schema_version": 1,
+        "schema_version": 2,
         "run_id": run_id,
         "created_at_utc": now.isoformat(),
         "status": status,
@@ -254,6 +316,7 @@ def execute(
         "counts": counts,
         "metrics": metrics,
         "requirements": results,
+        "simulations": load_simulation_results(),
         "assumptions": assumptions_doc.get("assumptions", []),
         "risks": risks_doc.get("risks", []),
         "component_errors": component_errors,
