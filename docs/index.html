@@ -260,7 +260,7 @@ async function togglePowder(){
   else statusText.textContent="Phase 02A screening loaded · full 3D DEM not run";
   renderInspector();
 }
-\nfunction buffer(data){const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.STATIC_DRAW);return b}
+function buffer(data){const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.STATIC_DRAW);return b}
 function makeObject(name,b,color,alpha,rotating){return{name,color,alpha,rotating,count:b.p.length/3,edgeCount:b.e.length/3,pos:buffer(b.p),nor:buffer(b.n),edge:buffer(b.e),edgeNor:buffer(new Array(b.e.length).fill(0))}}
 function initGL(){
   canvas=$("canvas");gl=canvas.getContext("webgl",{antialias:true,alpha:true})||canvas.getContext("experimental-webgl");if(!gl)throw new Error("WebGL is unavailable.");
