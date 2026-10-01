@@ -1,2 +1,4 @@
 cadquery==2.8.0
 PyYAML==6.0.3
+numpy>=2.0,<3
+numba>=0.60
