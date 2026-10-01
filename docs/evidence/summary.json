@@ -261,6 +261,12 @@
       "statement": "625 bearing pocket dimensions are nominal CAD dimensions and require a later printer-specific fit coupon before hardware manufacture.",
       "confidence": "high",
       "status": "open"
+    },
+    {
+      "id": "ASM-AUGER-004",
+      "statement": "The Phase 02A 2 mm coarse particles represent groups of much finer real rangoli grains; absolute mass flow and torque are therefore not calibrated outputs.",
+      "confidence": "high",
+      "status": "open"
     }
   ],
   "risks": [
@@ -292,6 +298,12 @@
       "id": "RISK-AUGER-004",
       "statement": "Material ingress toward end bearings may increase drag over time.",
       "severity": "medium",
+      "status": "open"
+    },
+    {
+      "id": "RISK-AUGER-005",
+      "statement": "Reduced-order powder screening shows strongly pulsatile discharge, worsening sharply as cohesion rises.",
+      "severity": "high",
       "status": "open"
     }
   ],
