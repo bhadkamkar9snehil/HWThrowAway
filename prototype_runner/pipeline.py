@@ -5,7 +5,6 @@ import datetime as dt
 import html
 import importlib
 import json
-import os
 import platform
 import subprocess
 import sys
@@ -22,8 +21,7 @@ if str(ROOT) not in sys.path:
 
 def load_yaml(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as handle:
-        data = yaml.safe_load(handle)
-    return data or {}
+        return yaml.safe_load(handle) or {}
 
 
 def git_value(*args: str) -> str | None:
@@ -57,28 +55,31 @@ def evaluate(actual: Any, operator: str, target: Any) -> bool:
 def run_component(component: dict[str, Any]) -> dict[str, Any]:
     component_id = component["id"]
     module = importlib.import_module(component["module"])
-    exporter_name = component.get("exporter")
-    inspector_name = component.get("inspector")
 
-    if exporter_name:
-        getattr(module, exporter_name)()
-    if not inspector_name:
+    exporter = component.get("exporter")
+    if exporter:
+        getattr(module, exporter)()
+
+    inspector = component.get("inspector")
+    if not inspector:
         raise ValueError(f"Component {component_id} has no inspector")
 
-    metrics = getattr(module, inspector_name)()
+    metrics = getattr(module, inspector)()
     if not isinstance(metrics, dict):
         raise TypeError(f"Inspector for {component_id} must return a dict")
     return metrics
 
 
 def requirement_results(
-    requirements: list[dict[str, Any]], metrics: dict[str, dict[str, Any]]
+    requirements: list[dict[str, Any]],
+    metrics: dict[str, dict[str, Any]],
 ) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
-    for req in requirements:
-        result = dict(req)
-        component_id = req.get("component")
-        metric_name = req.get("metric")
+
+    for requirement in requirements:
+        result = dict(requirement)
+        component_id = requirement.get("component")
+        metric_name = requirement.get("metric")
         actual = metrics.get(component_id, {}).get(metric_name)
         result["actual"] = actual
 
@@ -87,16 +88,21 @@ def requirement_results(
             result["reason"] = "metric_not_available"
         else:
             try:
-                passed = evaluate(actual, req["operator"], req.get("target"))
+                passed = evaluate(actual, requirement["operator"], requirement.get("target"))
                 result["status"] = "PASS" if passed else "FAIL"
             except Exception as exc:
                 result["status"] = "UNKNOWN"
                 result["reason"] = f"evaluation_error: {exc}"
+
         results.append(result)
+
     return results
 
 
-def overall_status(results: list[dict[str, Any]], component_errors: list[dict[str, str]]) -> str:
+def overall_status(
+    results: list[dict[str, Any]],
+    component_errors: list[dict[str, str]],
+) -> str:
     if component_errors or any(item["status"] == "FAIL" for item in results):
         return "FAIL"
     if any(item["status"] == "UNKNOWN" for item in results):
@@ -106,7 +112,6 @@ def overall_status(results: list[dict[str, Any]], component_errors: list[dict[st
 
 def make_report(summary: dict[str, Any]) -> str:
     esc = lambda value: html.escape(str(value))
-    status = summary["status"]
     counts = summary["counts"]
 
     requirement_rows = "".join(
@@ -153,12 +158,17 @@ h1{{margin:0 0 6px;font-size:30px}} .muted{{color:#676767}} .badge{{padding:9px 
 .grid{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0 28px}} .card{{background:white;border:1px solid #ddd;border-radius:12px;padding:16px}} .big{{font-size:26px;font-weight:750}}
 section{{background:white;border:1px solid #ddd;border-radius:12px;padding:20px;margin:14px 0}} h2{{font-size:18px;margin:0 0 14px}}
 table{{width:100%;border-collapse:collapse;font-size:14px}} th,td{{text-align:left;padding:10px 8px;border-bottom:1px solid #eee;vertical-align:top}} th{{color:#555;font-weight:650}}
-.status{{font-weight:750}} .pass{{color:#176b36}} .fail{{color:#a22}} .unknown{{color:#8a6418}} code{{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}}
+.status{{font-weight:750}} .pass{{color:#176b36}} .fail{{color:#a22}} .unknown{{color:#8a6418}}
+code,pre{{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}}
 @media(max-width:800px){{body{{padding:16px}}.grid{{grid-template-columns:repeat(2,1fr)}}header{{display:block}}}}
 </style>
 </head>
 <body><main>
-<header><div><h1>{esc(summary['project']['name'])}</h1><div class='muted'>Run <code>{esc(summary['run_id'])}</code> · commit <code>{esc(summary['provenance'].get('git_commit') or 'unavailable')}</code></div></div><div class='badge'>{esc(status)}</div></header>
+<header>
+<div><h1>{esc(summary['project']['name'])}</h1>
+<div class='muted'>Run <code>{esc(summary['run_id'])}</code> · source <code>{esc(summary['provenance'].get('source_ref') or 'working-copy')}</code></div></div>
+<div class='badge'>{esc(summary['status'])}</div>
+</header>
 <div class='grid'>
 <div class='card'><div class='muted'>Requirements</div><div class='big'>{counts['total']}</div></div>
 <div class='card'><div class='muted'>Pass</div><div class='big'>{counts['pass']}</div></div>
@@ -174,7 +184,7 @@ table{{width:100%;border-collapse:collapse;font-size:14px}} th,td{{text-align:le
 </main></body></html>"""
 
 
-def write_evidence(summary: dict[str, Any], config: dict[str, Any]) -> tuple[Path, Path]:
+def write_evidence(summary: dict[str, Any], config: dict[str, Any]) -> None:
     evidence_root = ROOT / config.get("pipeline", {}).get("evidence_root", "evidence")
     run_dir = evidence_root / "runs" / summary["run_id"]
     latest_dir = evidence_root / "latest"
@@ -183,7 +193,7 @@ def write_evidence(summary: dict[str, Any], config: dict[str, Any]) -> tuple[Pat
     for directory in (run_dir, latest_dir, publish_dir):
         directory.mkdir(parents=True, exist_ok=True)
 
-    summary_json = json.dumps(summary, indent=2, sort_keys=False) + "\n"
+    summary_json = json.dumps(summary, indent=2) + "\n"
     report_html = make_report(summary)
 
     for directory in (run_dir, latest_dir):
@@ -192,24 +202,24 @@ def write_evidence(summary: dict[str, Any], config: dict[str, Any]) -> tuple[Pat
 
     (publish_dir / "summary.json").write_text(summary_json, encoding="utf-8")
     (publish_dir / "index.html").write_text(report_html, encoding="utf-8")
-    return run_dir / "summary.json", run_dir / "report.html"
 
 
-def execute(job_path: Path | None = None) -> dict[str, Any]:
+def execute(
+    run_id: str | None = None,
+    source_ref: str | None = None,
+    source_commit: str | None = None,
+) -> dict[str, Any]:
     config = load_yaml(ROOT / "prototype.yaml")
     requirements_doc = load_yaml(ROOT / "requirements" / "requirements.yaml")
     assumptions_doc = load_yaml(ROOT / "assumptions" / "assumptions.yaml")
     risks_doc = load_yaml(ROOT / "risks" / "risks.yaml")
 
     now = dt.datetime.now(dt.timezone.utc)
-    run_id = os.environ.get("PROTOTYPE_JOB_ID") or f"RUN-{now.strftime('%Y%m%dT%H%M%SZ')}"
-    job: dict[str, Any] | None = None
-    if job_path:
-        job = json.loads(job_path.read_text(encoding="utf-8"))
-        run_id = str(job.get("job_id") or run_id)
+    run_id = run_id or f"RUN-{now.strftime('%Y%m%dT%H%M%SZ')}"
 
     metrics: dict[str, dict[str, Any]] = {}
     component_errors: list[dict[str, str]] = []
+
     for component in config.get("components", []):
         component_id = component["id"]
         try:
@@ -238,7 +248,6 @@ def execute(job_path: Path | None = None) -> dict[str, Any]:
         "created_at_utc": now.isoformat(),
         "status": status,
         "project": config.get("project", {}),
-        "job": job,
         "counts": counts,
         "metrics": metrics,
         "requirements": results,
@@ -246,32 +255,43 @@ def execute(job_path: Path | None = None) -> dict[str, Any]:
         "risks": risks_doc.get("risks", []),
         "component_errors": component_errors,
         "provenance": {
-            "git_commit": git_value("rev-parse", "HEAD"),
-            "git_branch": git_value("branch", "--show-current"),
+            "executor": "chatgpt_tool_environment",
+            "source_ref": source_ref or git_value("branch", "--show-current"),
+            "source_commit": source_commit or git_value("rev-parse", "HEAD"),
             "python": sys.version.split()[0],
             "platform": platform.platform(),
             "machine": platform.machine(),
         },
     }
+
     write_evidence(summary, config)
     return summary
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run the repeatable prototype evidence pipeline.")
-    parser.add_argument("--job", type=Path, help="Optional queued job JSON file")
-    parser.add_argument("--json", action="store_true", help="Print full summary JSON")
+    parser = argparse.ArgumentParser(description="Run the ad-hoc prototype evidence pipeline.")
+    parser.add_argument("--run-id")
+    parser.add_argument("--source-ref")
+    parser.add_argument("--source-commit")
+    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
-    summary = execute(args.job)
+    summary = execute(
+        run_id=args.run_id,
+        source_ref=args.source_ref,
+        source_commit=args.source_commit,
+    )
+
     if args.json:
         print(json.dumps(summary, indent=2))
     else:
         print(
             f"{summary['run_id']}: {summary['status']} "
-            f"({summary['counts']['pass']} pass, {summary['counts']['fail']} fail, "
+            f"({summary['counts']['pass']} pass, "
+            f"{summary['counts']['fail']} fail, "
             f"{summary['counts']['unknown']} unknown)"
         )
+
     if summary["status"] == "PASS":
         return 0
     if summary["status"] == "UNKNOWN":

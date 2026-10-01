@@ -24,22 +24,22 @@ Current dimensions:
 - [Open/download the STEP model](exports/rangoli_hopper_shell_v1.step)
 - Enhanced interactive viewer: `https://bhadkamkar9snehil.github.io/HWThrowAway/` after GitHub Pages is enabled from **main / docs**.
 
-The enhanced viewer supports orbit, pan, zoom, front/right/top/isometric views, wireframe, transparency, grid/axes, auto-rotate, part visibility, and part selection. It is already structured for multiple components later.
+## Chat-driven prototype pipeline
 
-## Repeatable prototype pipeline
+The repository contains a solver-independent digital prototype pipeline. **ChatGPT is the runner**: on each request it reads the current design from GitHub, makes the requested change on an isolated branch, executes the relevant checks/simulations in its tool environment, produces evidence, and writes the result back to GitHub.
 
-This repo now includes a solver-independent engineering pipeline. ChatGPT creates an isolated `prototype/*` branch and queues a job; a private Windows runner regenerates the CAD, measures deterministic metrics, evaluates machine-readable requirements, publishes evidence, and pushes the result back to that same branch. The runner never pushes directly to `main` and no GitHub Actions are used.
+There are no scheduled jobs, background services, GitHub Actions, or required workstation runner.
 
-The stable design contracts are:
+Core contracts:
 
-- `prototype.yaml` — project/components and their exporter/inspector entry points
+- `prototype.yaml` — project/components and exporter/inspector entry points
 - `requirements/requirements.yaml` — executable acceptance criteria
-- `architecture/interfaces.yaml` — interfaces between components
-- `assumptions/` and `risks/` — explicit uncertainty rather than hidden claims
-- `prototype_runner/` — deterministic pipeline and GitHub branch daemon
+- `architecture/interfaces.yaml` — component interface definitions
+- `assumptions/` and `risks/` — explicit uncertainty
+- `prototype_runner/pipeline.py` — deterministic pipeline executable
 - `evidence/` + `docs/evidence/` — machine-readable and browser-readable proof
 
-See [PIPELINE.md](PIPELINE.md) for the exact chat → branch → runner → evidence → merge loop.
+See [PIPELINE.md](PIPELINE.md) for the exact ad-hoc workflow.
 
 ## Repository structure
 
@@ -58,14 +58,11 @@ docs/
   evidence/                         Latest generated verification report
 
 prototype_runner/
-  pipeline.py                       CAD/check/evidence runner
-  daemon.py                         Watches remote prototype/* branches
+  pipeline.py                       Deterministic CAD/check/evidence pipeline
 requirements/                       Executable requirements
 architecture/                       Interface contracts
 assumptions/                        Explicit assumptions
 risks/                              Explicit risks
-jobs/                               Chat/runner job handoff
-scripts/install_runner.ps1          One-time Windows daemon installer
 
 .agents/skills/
   mechanical-product-design/
@@ -74,24 +71,22 @@ scripts/install_runner.ps1          One-time Windows daemon installer
 AGENTS.md                            Repo-wide instructions for coding agents
 ```
 
-## Regenerate the model manually
+## Pipeline executable
+
+The same executable ChatGPT uses can also be run manually when debugging:
 
 ```bash
 pip install -r requirements.txt
-python cad/hopper.py
+python prototype_runner/pipeline.py --json
 ```
 
-Run the complete digital evidence pipeline:
-
-```bash
-python prototype_runner/pipeline.py
-```
+Manual execution is optional; the intended user workflow is through ChatGPT.
 
 The SVG is not an AI illustration. It is a geometric projection generated directly from the same CadQuery solid used for the STEP/STL outputs.
 
 ## Reusable CAD viewer setup guide
 
-For setting up another GitHub repository with the same browser-based interactive CAD viewing pattern, see [CAD_VIEWER_HANDOVER.md](CAD_VIEWER_HANDOVER.md). It covers repository layout, STEP/STL/GLB roles, Three.js viewer architecture, model discovery, GitHub Pages configuration, deployment verification, troubleshooting, and a handoff prompt for another agent.
+For setting up another GitHub repository with the same browser-based interactive CAD viewing pattern, see [CAD_VIEWER_HANDOVER.md](CAD_VIEWER_HANDOVER.md).
 
 ## Design rule
 

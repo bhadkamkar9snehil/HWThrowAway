@@ -2,21 +2,24 @@
 
 ## Goal
 
-The user interacts through ChatGPT. GitHub stores the authoritative design state. A private Windows runner executes deterministic CAD generation and verification. Results return to the same GitHub design branch as machine-readable evidence and a readable report.
+The user interacts only through ChatGPT. GitHub stores the authoritative design state. **ChatGPT's execution environment is the runner.** Each prototype iteration is executed ad hoc when the user asks for it.
 
-No GitHub Actions are used.
+There is no daemon, polling loop, scheduled task, GitHub Action, or workstation bootstrap.
 
 ## Normal design loop
 
-1. ChatGPT reads `main` and the latest evidence.
-2. ChatGPT creates `prototype/<job-id>` from `main`.
-3. ChatGPT makes the smallest requested design change on that branch.
-4. ChatGPT adds `jobs/<job-id>.json` with `status: queued`.
-5. The local daemon discovers the branch and runs `prototype_runner/pipeline.py`.
-6. The runner regenerates exports, inspects components, evaluates requirements, and writes evidence.
-7. The runner marks the job completed/failed and pushes only to the same prototype branch.
-8. ChatGPT reviews `evidence/latest/summary.json` and the diff.
-9. If evidence is acceptable, ChatGPT merges the branch. If not, ChatGPT revises it and queues another job.
+1. The user asks for a design or change in ChatGPT.
+2. ChatGPT reads the current repository state and latest evidence from GitHub.
+3. ChatGPT creates an isolated `prototype/<iteration>` branch when a design change is needed.
+4. ChatGPT changes the parametric design and, where necessary, the requirements/interfaces/assumptions that define success.
+5. ChatGPT materializes the relevant source files into its execution environment.
+6. ChatGPT runs `prototype_runner/pipeline.py` directly.
+7. The pipeline regenerates CAD outputs, inspects components, evaluates executable requirements, and produces JSON/HTML evidence.
+8. ChatGPT runs any additional relevant simulation or analysis ad hoc and folds its result into the engineering assessment.
+9. ChatGPT writes the resulting source/evidence back to the design branch and reviews the diff.
+10. ChatGPT reports what passed, failed, or remains unknown. A successful iteration can then be merged.
+
+The user does not operate the pipeline.
 
 ## Stable contracts
 
@@ -27,7 +30,7 @@ Each component listed in `prototype.yaml` exposes:
 - an exporter function that regenerates derived artifacts;
 - an inspector function returning deterministic metrics as a Python dictionary.
 
-This allows any future CAD implementation to participate without changing the evidence engine.
+This allows future components and solvers to participate without changing the interaction model.
 
 ### Requirement contract
 
@@ -37,21 +40,36 @@ Missing metrics become `UNKNOWN`; they are never silently treated as passes.
 
 ### Evidence contract
 
-Every run produces:
+Every ad-hoc run produces:
 
-- `evidence/runs/<job-id>/summary.json`
-- `evidence/runs/<job-id>/report.html`
+- `evidence/runs/<run-id>/summary.json`
+- `evidence/runs/<run-id>/report.html`
 - `evidence/latest/*`
 - `docs/evidence/*` for browser viewing
 
-The JSON includes provenance, metrics, requirement results, assumptions, risks, and component errors.
+The evidence records source ref/commit, measured metrics, requirement results, assumptions, risks, and component errors.
 
-## One-time Windows bootstrap
+## Current scope
 
-After this pipeline is merged to `main`, run `scripts/install_runner.ps1` once on the Windows workstation that will execute CAD/simulation jobs. It creates an isolated clone under `%LOCALAPPDATA%`, installs Python dependencies, and registers a logon Scheduled Task.
+The current implementation proves the execution pattern using deterministic CadQuery geometry checks. It is intentionally solver-independent.
 
-The runner requires normal GitHub push authentication on that machine. After bootstrap, normal design requests can originate entirely from ChatGPT.
+Mechanical simulation extensions can be added behind the same evidence contract when a design needs them, for example:
 
-## Extension points
+- tolerance and parameter sweeps;
+- multibody/kinematic simulation;
+- Project Chrono;
+- DEM/DEME for granular-material behaviour;
+- structural FEA.
 
-Future solvers should not replace this pipeline. Add them as stages that emit metrics into the same evidence model. Examples: tolerance Monte Carlo, CalculiX, Project Chrono, DEME, OpenModelica, electronics checks, or other domain solvers.
+Electronics/PCB simulation is not part of the current target scope.
+
+## User interaction
+
+Normal prompts are simply design intents, for example:
+
+- "Make the hopper 1 litre but keep total height below 150 mm."
+- "Add a rotary feeder below it and make sure nothing collides through one full revolution."
+- "Compare three outlet sizes and tell me which constraints each one passes."
+- "Run the current prototype checks and show me what is still unproven."
+
+ChatGPT decides which deterministic checks or simulations are warranted, executes them immediately, and reports the evidence.
