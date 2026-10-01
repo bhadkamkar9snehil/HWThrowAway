@@ -1,0 +1,6 @@
+schema_version: 1
+assumptions:
+  - id: ASM-DIGITAL-001
+    statement: Current automated evidence covers digital geometry only; no physical manufacturing or material behaviour is claimed.
+    confidence: high
+    status: accepted

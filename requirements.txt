@@ -1,1 +1,2 @@
 cadquery==2.8.0
+PyYAML==6.0.3

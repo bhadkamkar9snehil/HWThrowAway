@@ -26,11 +26,26 @@ Current dimensions:
 
 The enhanced viewer supports orbit, pan, zoom, front/right/top/isometric views, wireframe, transparency, grid/axes, auto-rotate, part visibility, and part selection. It is already structured for multiple components later.
 
+## Repeatable prototype pipeline
+
+This repo now includes a solver-independent engineering pipeline. ChatGPT creates an isolated `prototype/*` branch and queues a job; a private Windows runner regenerates the CAD, measures deterministic metrics, evaluates machine-readable requirements, publishes evidence, and pushes the result back to that same branch. The runner never pushes directly to `main` and no GitHub Actions are used.
+
+The stable design contracts are:
+
+- `prototype.yaml` — project/components and their exporter/inspector entry points
+- `requirements/requirements.yaml` — executable acceptance criteria
+- `architecture/interfaces.yaml` — interfaces between components
+- `assumptions/` and `risks/` — explicit uncertainty rather than hidden claims
+- `prototype_runner/` — deterministic pipeline and GitHub branch daemon
+- `evidence/` + `docs/evidence/` — machine-readable and browser-readable proof
+
+See [PIPELINE.md](PIPELINE.md) for the exact chat → branch → runner → evidence → merge loop.
+
 ## Repository structure
 
 ```text
 cad/
-  hopper.py                         Parametric CadQuery source
+  hopper.py                         Parametric CadQuery source + metric inspector
 exports/
   rangoli_hopper_shell_v1.step      Engineering CAD solid
   rangoli_hopper_shell_v1.stl       Printable / browser-viewable mesh
@@ -40,6 +55,17 @@ previews/
 docs/
   index.html                        Interactive Three.js viewer
   models.json                       Viewer part manifest
+  evidence/                         Latest generated verification report
+
+prototype_runner/
+  pipeline.py                       CAD/check/evidence runner
+  daemon.py                         Watches remote prototype/* branches
+requirements/                       Executable requirements
+architecture/                       Interface contracts
+assumptions/                        Explicit assumptions
+risks/                              Explicit risks
+jobs/                               Chat/runner job handoff
+scripts/install_runner.ps1          One-time Windows daemon installer
 
 .agents/skills/
   mechanical-product-design/
@@ -48,11 +74,17 @@ docs/
 AGENTS.md                            Repo-wide instructions for coding agents
 ```
 
-## Regenerate the model
+## Regenerate the model manually
 
 ```bash
 pip install -r requirements.txt
 python cad/hopper.py
+```
+
+Run the complete digital evidence pipeline:
+
+```bash
+python prototype_runner/pipeline.py
 ```
 
 The SVG is not an AI illustration. It is a geometric projection generated directly from the same CadQuery solid used for the STEP/STL outputs.

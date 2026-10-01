@@ -1,0 +1,18 @@
+schema_version: 1
+interfaces:
+  - id: IF-HOPPER-FILL
+    component: hopper-shell-v1
+    name: Fill opening
+    type: material
+    status: defined
+    parameters:
+      nominal_outer_diameter_mm: 80.0
+
+  - id: IF-HOPPER-OUTLET
+    component: hopper-shell-v1
+    name: Powder outlet
+    type: mechanical_material
+    status: defined
+    parameters:
+      nominal_outer_diameter_mm: 16.0
+      nominal_clear_diameter_mm: 12.0

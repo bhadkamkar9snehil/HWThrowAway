@@ -1,0 +1,35 @@
+schema_version: 1
+requirements:
+  - id: DIG-GEO-001
+    title: CAD result is a valid solid
+    component: hopper-shell-v1
+    metric: solid_valid
+    operator: eq
+    target: true
+    method: deterministic_geometry
+
+  - id: DIG-GEO-002
+    title: CAD result contains exactly one solid
+    component: hopper-shell-v1
+    metric: solid_count
+    operator: eq
+    target: 1
+    method: deterministic_geometry
+
+  - id: DIG-GEO-003
+    title: Internal capacity is positive
+    component: hopper-shell-v1
+    metric: capacity_ml
+    operator: gt
+    target: 0
+    unit: ml
+    method: analytic_geometry
+
+  - id: DIG-GEO-004
+    title: Outlet has a positive clear diameter
+    component: hopper-shell-v1
+    metric: outlet_clear_diameter_mm
+    operator: gt
+    target: 0
+    unit: mm
+    method: analytic_geometry
